@@ -24,7 +24,6 @@ use Illuminate\Support\ServiceProvider;
 use Warlof\Seat\Connector\Discord\Commands\DiscordLogsClear;
 use Warlof\Seat\Connector\Discord\Commands\DiscordRoleSync;
 use Warlof\Seat\Connector\Discord\Commands\DiscordUserPolicy;
-use Warlof\Seat\Connector\Discord\Commands\DiscordUserSync;
 use Warlof\Seat\Connector\Discord\Commands\DiscordUserTerminator;
 
 class DiscordConnectorServiceProvider extends ServiceProvider
@@ -64,7 +63,6 @@ class DiscordConnectorServiceProvider extends ServiceProvider
     {
         $this->commands([
         	DiscordLogsClear::class,
-            DiscordUserSync::class,
 	        DiscordUserPolicy::class,
             DiscordUserTerminator::class,
             DiscordRoleSync::class,
