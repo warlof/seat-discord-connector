@@ -20,16 +20,15 @@
 
 namespace Warlof\Seat\Connector\Discord\Http\Controllers;
 
-use Exception;
+use RestCord\DiscordClient;
 use Seat\Eveapi\Models\Alliances\Alliance;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use Seat\Eveapi\Models\Corporation\CorporationTitle;
 use Seat\Web\Http\Controllers\Controller;
 use Seat\Web\Models\Acl\Role;
 use Seat\Web\Models\Group;
-use Warlof\Seat\Connector\Discord\Http\Controllers\Services\Traits\SlackApiConnector;
 use Warlof\Seat\Connector\Discord\Http\Validation\AddRelation;
-use Warlof\Seat\Connector\Discord\Http\Validation\UserRole;
+use Warlof\Seat\Connector\Discord\Http\Validation\DiscordUser;
 use Warlof\Seat\Connector\Discord\Models\DiscordRole;
 use Warlof\Seat\Connector\Discord\Models\DiscordRoleAlliance;
 use Warlof\Seat\Connector\Discord\Models\DiscordRoleCorporation;
@@ -40,26 +39,30 @@ use Warlof\Seat\Connector\Discord\Models\DiscordRoleGroup;
 
 class DiscordJsonController extends Controller
 {
-
-	use SlackApiConnector;
-
     /**
-     * @param UserRole $request
+     * @param DiscordUser $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getJsonUserChannelsData(UserRole $request)
+    public function getJsonUserRolesData(DiscordUser $request)
     {
-        $slackId = $request->input('slack_id');
+        $discord_id = $request->input('discord_id');
 
-        if (is_null(setting('warlof.slackbot.credentials.access_token', true)))
+        if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
             return response()->json([]);
 
-        try {
-	        $conversations_buffer = $this->fetchUserConversations($slackId);
-	        return response()->json($conversations_buffer);
-        } catch (Exception $e) {
-        	return response()->json($e->getMessage(), 500);
-        }
+        $driver = new DiscordClient([
+            'tokenType' => 'Bot',
+            'token'     => setting('warlof.discord-connector.credentials.bot_token', true),
+        ]);
+
+        $guild_member = $driver->guild->getGuildMember([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            'user.id' => intval($discord_id),
+        ]);
+
+        $roles = DiscordRole::whereIn('id', $guild_member->roles)->select('id', 'name')->get();
+
+        return response()->json($roles);
     }
 
     public function getJsonTitle()

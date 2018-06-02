@@ -21,19 +21,22 @@
 namespace Warlof\Seat\Connector\Discord\Http\Controllers;
 
 use Seat\Web\Http\Controllers\Controller;
-use Warlof\Seat\Connector\Discord\Http\Controllers\Services\Traits\SlackApiConnector;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 use Yajra\Datatables\Facades\Datatables;
 
 class DiscordController extends Controller
 {
-    use SlackApiConnector;
-
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function getUsers()
     {
         return view('discord-connector::users.list');
     }
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function postRemoveUserMapping()
     {
         $slackId = request()->input('slack_id');
@@ -65,32 +68,8 @@ class DiscordController extends Controller
      */
     public function getUsersData()
     {
-        if (is_null(setting('warlof.slackbot.credentials.access_token', true)))
+        if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
             return Datatables::of(collect([]))->make(true);
-
-        $users = DiscordUser::whereNull('nick')->get();
-
-        if ($users->count() > 0) {
-
-            foreach ($users as $slackUser) {
-
-                try {
-                    $response = $this->getConnector()->setQueryString([
-                        'email' => $slackUser->user->email,
-                    ])->invoke( 'get', '/users.lookupByEmail' );
-                    $slackUser->update( [
-                        'name' => property_exists( $response->user, 'name' ) ? $response->user->name : '',
-                    ] );
-
-                    if ( $users->count() > 1 ) {
-                        sleep( 1 );
-                    }
-                } catch (RequestFailedException $e) {
-
-                }
-
-            }
-        }
 
         $users = DiscordUser::all();
 
@@ -104,11 +83,11 @@ class DiscordController extends Controller
             ->addColumn('user_name', function($row){
                 return optional($row->group->main_character)->name ?: 'Unknown Character';
             })
-            ->addColumn('slack_id', function($row){
-                return $row->slack_id;
+            ->editColumn('discord_id', function($row){
+                return (string) $row->discord_id;
             })
-            ->addColumn('slack_name', function($row){
-                return $row->name;
+            ->addColumn('discord_nick', function($row){
+                return $row->nick;
             })
             ->make(true);
     }

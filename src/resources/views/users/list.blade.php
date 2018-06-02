@@ -34,53 +34,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="user-channels" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close pull-right" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title">
-                        <span id="discord_username"></span>
-                        (<span id="seat_username"></span>) is member of following
-                    </h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-condensed table-hover" id="channels">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <table class="table table-condensed table-hover" id="groups">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="overlay">
-                        <i class="fa fa-refresh fa-spin"></i>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-xs btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('discord-connector::users.includes.roles_modal')
 
 @endsection
 
@@ -90,7 +44,7 @@
 
 @push('javascript')
 <script type="text/javascript">
-    $(function(){
+    $(function() {
         var modal = $('#user-channels');
         var table = $('table#users-table').DataTable({
             processing: true,
@@ -99,14 +53,14 @@
             columns: [
                 {data: 'group_id'},
                 {data: 'user_id'},
-                {data: 'user_nick'},
+                {data: 'user_name'},
                 {data: 'discord_id'},
                 {data: 'discord_nick'},
                 @if (auth()->user()->has('discord-connector.security'))
                 {
                     data: null,
                     targets: -1,
-                    defaultContent: '<button class="btn btn-xs btn-info">Channels</button> <button class="btn btn-xs btn-danger">Remove</button>',
+                    defaultContent: '<button class="btn btn-xs btn-info">Roles</button> <button class="btn btn-xs btn-danger">Remove</button>',
                     orderable: false
                 }
                 @endif
@@ -119,40 +73,27 @@
         });
 
         $('#users-table').find('tbody')
-            .on('click', 'button.btn-info', function(){
+            .on('click', 'button.btn-info', function() {
                 var row = table.row($(this).parents('tr')).data();
                 $('#discord_username').text(row.discord_nick);
-                $('#seat_username').text(row.user_nick);
-                $('#channels, #groups').find('tbody tr').remove();
+                $('#seat_username').text(row.user_name);
+                $('#roles').find('tbody tr').remove();
                 modal.find('.overlay').show();
 
                 $.ajax({
-                    url: '{{ route('discord-connector.json.user.channels', ['id' => null]) }}',
+                    url: '{{ route('discord-connector.json.user.roles', ['id' => null]) }}',
                     data: {'discord_id' : row.discord_id},
                     success: function(data){
                         if (data) {
                             for (var i = 0; i < data.length; i++) {
-                                var conversation = data[i];
+                                var role = data[i];
 
-                                // conversations is a group
-                                if (conversation.is_group) {
-                                    $('#groups').find('tbody').append(
-                                        '<tr><td>' +
-                                        conversation.id +
-                                        '</td><td>' +
-                                        conversation.name +
-                                        '</td></tr>');
-                                }
-
-                                // conversations is a channel
-                                if (conversation.is_channel) {
-                                    $('#channels').find('tbody').append(
-                                        '<tr><td>' +
-                                        conversation.id +
-                                        '</td><td>' +
-                                        conversation.name +
-                                        '</td></tr>');
-                                }
+                                $('#roles').find('tbody').append(
+                                    '<tr><td>' +
+                                    role.id +
+                                    '</td><td>' +
+                                    role.name +
+                                    '</td></tr>');
                             }
                         }
 
