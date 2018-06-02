@@ -38,43 +38,25 @@ class SyncRole extends DiscordJobBase {
     public function handle()
     {
         // TODO : move into container
-        // TODO : bind to guild
-        // TODO : use OAuth credentials instead bot one
-        $token = setting('warlof.discord-connector.credentials.token', true);
-
-        if (carbon()->setTimezone('UTC')->gte(carbon($token['expires']))) {
-            $payload = [
-                'client_id' => setting('warlof.discord-connector.credentials.client_id', true),
-                'client_secret' => setting('warlof.discord-connector.credentials.client_secret', true),
-                'refresh_token' => $token->refresh,
-                'grant_type' => 'refresh_token',
-                'scope' => implode(OAuthController::SCOPES, ' '),
-            ];
-
-            $request = (new Client())->request('POST', 'https://discordapp.com/api/oauth2/token', [
-                'form-params' => $payload,
-            ]);
-
-            $response = json_decode($request->getBody());
-            $token->access = $response->access_token;
-            $token->expires = carbon(array_first($request->getHeader('Date')))->addSeconds($response->expires_in)->toDateTimeString();
-
-            setting(['warlof.discord-connector.credentials.token', $token], true);
-        }
-
-        $token = setting('warlof.discord-connector.credentials.token', true);
-
         $driver = new DiscordClient([
-            'tokenType' => 'OAuth',
-            'token' => $token->access,
+            'tokenType' => 'Bot',
+            'token' => setting('warlof.discord-connector.credentials.bot_token', true),
         ]);
-        $discord_roles = $driver->guild->getGuildRoles(['guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true))]);
+
+        $discord_roles = $driver->guild->getGuildRoles([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+        ]);
 
         $conversations_buffer = [];
 
         foreach ($discord_roles as $role) {
 
+            // skip managed roles as we are not able to use them
+            if ($role->managed || $role->name == '@everyone')
+                continue;
+
             $conversations_buffer[] = $role->id;
+
             DiscordRole::updateOrCreate(
                 [
                     'id' => $role->id,
