@@ -28,7 +28,7 @@ use Seat\Web\Http\Controllers\Controller;
 use Seat\Web\Models\Acl\Role;
 use Seat\Web\Models\Group;
 use Warlof\Seat\Connector\Discord\Http\Validation\AddRelation;
-use Warlof\Seat\Connector\Discord\Http\Validation\DiscordUser;
+use Warlof\Seat\Connector\Discord\Http\Validation\DiscordUserShowModal;
 use Warlof\Seat\Connector\Discord\Models\DiscordRole;
 use Warlof\Seat\Connector\Discord\Models\DiscordRoleAlliance;
 use Warlof\Seat\Connector\Discord\Models\DiscordRoleCorporation;
@@ -40,10 +40,10 @@ use Warlof\Seat\Connector\Discord\Models\DiscordRoleGroup;
 class DiscordJsonController extends Controller
 {
     /**
-     * @param DiscordUser $request
+     * @param DiscordUserShowModal $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getJsonUserRolesData(DiscordUser $request)
+    public function getJsonUserRolesData(DiscordUserShowModal $request)
     {
         $discord_id = $request->input('discord_id');
 
