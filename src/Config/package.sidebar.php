@@ -25,16 +25,24 @@ return [
         'route_segment' => 'discord-connector',
         'entries' => [
             [
+                'name'  => 'Connect',
+                'label' => 'discord-connector::seat.join',
+                'icon'  => 'fa-sign-in',
+                'route' => 'discord-connector.server.join',
+            ],
+            [
                 'name'  => 'Access Management',
                 'label' => 'web::seat.access',
                 'icon'  => 'fa-shield',
                 'route' => 'discord-connector.list',
+                'permission' => 'discord-connector.security'
             ],
             [
                 'name'  => 'User Mapping',
                 'label' => 'discord-connector::seat.user_mapping',
                 'icon'  => 'fa-exchange',
-                'route' => 'discord-connector.users'
+                'route' => 'discord-connector.users',
+                'permission' => 'discord-connector.security'
             ],
             [
                 'name'       => 'Settings',
@@ -48,9 +56,10 @@ return [
                 'label'  => 'web::seat.log',
                 'plural' => true,
                 'icon'   => 'fa-list',
-                'route'  => 'discord-connector.logs'
+                'route'  => 'discord-connector.logs',
+                'permission' => 'discord-connector.security'
             ],
         ],
-        'permission' => 'discord-connector.view'
+        //'permission' => 'discord-connector.view'
     ],
 ];

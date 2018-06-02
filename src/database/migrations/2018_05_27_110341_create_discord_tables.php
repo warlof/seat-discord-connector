@@ -49,8 +49,12 @@ class CreateDiscordTables extends Migration
 
         Schema::create('warlof_discord_connector_users', function (Blueprint $table) {
             $table->unsignedInteger('group_id');
-            $table->string('discord_id');
+            $table->bigInteger('discord_id');
             $table->string('nick');
+            $table->string('refresh_token');
+            $table->string('access_token');
+            $table->dateTime('expires_at');
+            $table->string('scope');
             $table->timestamps();
 
             $table->primary('group_id', 'discord_users_primary');

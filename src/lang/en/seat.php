@@ -29,4 +29,5 @@ return [
     'alliance_filter' => 'Alliance Filter',
     'public_filter' => 'Public Filter',
     'discord_role' => 'Discord Role',
+    'join'      => 'Join Server',
 ];

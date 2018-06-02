@@ -21,16 +21,26 @@
 Route::group([
     'namespace' => 'Warlof\Seat\Connector\Discord\Http\Controllers',
     'prefix' => 'discord-connector'
-], function(){
+], function() {
 
     Route::group([
         'middleware' => 'web'
     ], function() {
 
+        Route::get('/server/join', [
+            'as' => 'discord-connector.server.join',
+            'uses' => 'Services\ServerController@join',
+        ]);
+
+        Route::get('/server/callback', [
+            'as' => 'discord-connector.server.callback',
+            'uses' => 'Services\ServerController@callback'
+        ]);
+
         // Endpoints with Configuration Permission
         Route::group([
             'middleware' => 'bouncer:discord-connector.setup'
-        ], function(){
+        ], function() {
 
             Route::get('/configuration', [
                 'as' => 'discord-connector.configuration',
@@ -46,16 +56,16 @@ Route::group([
             Route::group([
                 'namespace' => 'Services',
                 'prefix' => 'oauth'
-            ], function(){
-
-                Route::get('/callback', [
-                    'as' => 'discord-connector.oauth.callback',
-                    'uses' => 'OAuthController@callback'
-                ]);
+            ], function() {
 
                 Route::post('/configuration', [
                     'as' => 'discord-connector.oauth.configuration.post',
                     'uses' => 'OAuthController@postConfiguration'
+                ]);
+
+                Route::get('/callback', [
+                    'as' => 'discord-connector.oauth.callback',
+                    'uses' => 'OAuthController@callback'
                 ]);
 
             });
@@ -64,7 +74,7 @@ Route::group([
 
         Route::group([
             'middleware' => 'bouncer:discord-connector.create'
-        ], function(){
+        ], function() {
 
             Route::get('/public/{channel_id}/remove', [
                 'as' => 'discord-connector.public.remove',
@@ -130,7 +140,7 @@ Route::group([
 
         Route::group([
             'prefix' => 'json'
-        ], function(){
+        ], function() {
 
             Route::get('/logs', [
                 'as' => 'discord-connector.json.logs',
@@ -151,8 +161,8 @@ Route::group([
             ]);
 
             Route::get('/users/channels', [
-                'as' => 'discord-connector.json.user.channels',
-                'uses' => 'DiscordJsonController@getJsonUserChannelsData',
+                'as' => 'discord-connector.json.user.roles',
+                'uses' => 'DiscordJsonController@getJsonUserRolesData',
                 'middleware' => 'bouncer:discord-connector.security'
             ]);
 

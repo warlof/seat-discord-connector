@@ -33,7 +33,7 @@ class DiscordUser extends Model
     /**
      * @var string
      */
-    protected $primaryKey = 'user_id';
+    protected $primaryKey = 'group_id';
 
     /**
      * @var bool
@@ -44,7 +44,7 @@ class DiscordUser extends Model
      * @var array
      */
     protected $fillable = [
-        'group_id', 'slack_id', 'name',
+        'group_id', 'discord_id', 'nick', 'refresh_token', 'access_token', 'expires_at',
     ];
 
     /**
