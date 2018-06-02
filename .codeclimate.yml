@@ -1,0 +1,22 @@
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - javascript
+        - php
+  fixme:
+    enabled: true
+  phpmd:
+    enabled: true
+    checks:
+      Naming/ShortMethodName:
+        enabled: false
+      CleanCode/StaticAccess:
+        enabled: false
+ratings:
+  paths:
+    - "**.js"
+    - "**.php"
+exclude_paths:
+  - "tests/"
