@@ -22,6 +22,7 @@ namespace Warlof\Seat\Connector\Discord\Helpers;
 
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Seat\Eveapi\Models\Character\CharacterInfo;
 use Seat\Eveapi\Models\RefreshToken;
 use Seat\Web\Models\Acl\GroupRole;
@@ -64,32 +65,32 @@ class Helper
     /**
      * Determine all channels into which an user is allowed to be
      *
-     * @param DiscordUser $slackUser
+     * @param DiscordUser $discord_user
      * @return array
      */
-    public static function allowedChannels(DiscordUser $slackUser) : array
+    public static function allowedRoles(DiscordUser $discord_user) : array
     {
         $channels = [];
 
-        if (!Helper::isEnabledAccount($slackUser->group))
+        if (! Helper::isEnabledAccount($discord_user->group))
             return $channels;
 
-        if (!Helper::isEnabledKey($slackUser->group->users))
+        if (! Helper::isEnabledKey($discord_user->group->users))
             return $channels;
 
         $rows = Group::join('warlof_discord_connector_role_groups', 'warlof_discord_connector_role_groups.group_id', '=', 'groups.id')
                     ->select('discord_role_id')
-                    ->where('groups.id', $slackUser->group_id)
+                    ->where('groups.id', $discord_user->group_id)
                     ->union(
                         // fix model declaration calling the table directly
-                        GroupRole::join('warlof_discord_connector_role_roles', 'warlof_discord_connector_role_roles.role_id', '=',
+                        DB::table('group_role')->join('warlof_discord_connector_role_roles', 'warlof_discord_connector_role_roles.role_id', '=',
                                         'group_role.role_id')
-                                 ->where('group_role.group_id', $slackUser->group_id)
+                                 ->where('group_role.group_id', $discord_user->group_id)
                                  ->select('discord_role_id')
                     )->union(
                         CharacterInfo::join('warlof_discord_connector_role_corporations', 'warlof_discord_connector_role_corporations.corporation_id', '=',
                                             'character_infos.corporation_id')
-                                     ->whereIn('character_infos.character_id', $slackUser->group->users->pluck('id')->toArray())
+                                     ->whereIn('character_infos.character_id', $discord_user->group->users->pluck('id')->toArray())
                                      ->select('discord_role_id')
                     )->union(
                         CharacterInfo::join('character_titles', 'character_infos.character_id', '=', 'character_titles.character_id')
@@ -99,12 +100,12 @@ class Helper
                                          $join->on('warlof_discord_connector_role_titles.title_id', '=',
                                              'character_titles.title_id');
                                      })
-                                     ->whereIn('character_infos.character_id', $slackUser->group->users->pluck('id')->toArray())
+                                     ->whereIn('character_infos.character_id', $discord_user->group->users->pluck('id')->toArray())
                                      ->select('discord_role_id')
                     )->union(
                         CharacterInfo::join('warlof_discord_connector_role_alliances', 'warlof_discord_connector_role_alliances.alliance_id', '=',
                                             'character_infos.alliance_id')
-                                     ->whereIn('character_infos.character_id', $slackUser->group->users->pluck('id')->toArray())
+                                     ->whereIn('character_infos.character_id', $discord_user->group->users->pluck('id')->toArray())
                                      ->select('discord_role_id')
                     )->union(
                         DiscordRolePublic::select('discord_role_id')
@@ -116,13 +117,13 @@ class Helper
     }
 
     /**
-     * @param string $channelId
+     * @param string $role_id
      * @param DiscordUser $slackUser
      * @return bool
      */
-    public static function isAllowedChannel(string $channelId, DiscordUser $slackUser)
+    public static function isAllowedRole(int $role_id, DiscordUser $discord_user)
     {
-        return in_array($channelId, self::allowedChannels($slackUser));
+        return in_array($role_id, self::allowedRoles($discord_user));
     }
 
     public static function getSlackRedisKey($table, $objectId)
