@@ -34,6 +34,7 @@ class ValidateOAuth extends FormRequest
         return [
             'discord-configuration-client' => 'required|string',
             'discord-configuration-secret' => 'required|string',
+            'discord-configuration-bot'    => 'required|string',
         ];
     }
 }

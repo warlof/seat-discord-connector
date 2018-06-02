@@ -59,6 +59,26 @@
                                     </button>
                                 </span>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="discord-configuration-bot" class="col-md-4">Discord Bot Token</label>
+                        <div class="col-md-7">
+                            <div class="input-group input-group-sm">
+                                @if (setting('warlof.discord-connector.credentials.bot_token', true) == null)
+                                    <input type="text" class="form-control" id="discord-configuration-bot"
+                                           name="discord-configuration-bot" />
+                                @else
+                                    <input type="text" class="form-control" id="discord-configuration-bot"
+                                           name="discord-configuration-bot" value="{{ setting('warlof.discord-connector.credentials.bot_token', true) }}" readonly />
+                                @endif
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-danger btn-flat" id="bot-eraser">
+                                        <i class="fa fa-eraser"></i>
+                                    </button>
+                                </span>
+                            </div>
                             <span class="help-block text-justify">
                                 In order to generate credentials, please go on <a href="https://discordapp.com/developers/applications/me" target="_blank">your Discord apps</a> and create a new app.
                             </span>
@@ -86,23 +106,10 @@
                     @if(setting('warlof.discord-connector.credentials.token', true) == '')
                         <a href="#" type="button" class="btn btn-success btn-md col-md-12 disabled" role="button">Update Discord roles</a>
                     @else
-                        <a href="{{ route('discord-connector.command.run', ['commandName' => 'discord:conversation:sync']) }}" type="button" class="btn btn-success btn-md col-md-12" role="button">Update Discord roles</a>
+                        <a href="{{ route('discord-connector.command.run', ['commandName' => 'discord:role:sync']) }}" type="button" class="btn btn-success btn-md col-md-12" role="button">Update Discord roles</a>
                     @endif
                     <span class="help-block">
                         This will update known roles from Discord.
-                    </span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-12">
-                    @if(setting('warlof.discord-connector.credentials.token', true) == '')
-                        <a href="#" type="button" class="btn btn-success btn-md col-md-12 disabled" role="button">Update Discord users</a>
-                    @else
-                        <a href="{{ route('discord-connector.command.run', ['commandName' => 'discord:user:sync']) }}" type="button" class="btn btn-success btn-md col-md-12" role="button">Update Discord users</a>
-                    @endif
-                    <span class="help-block">
-                        This will try to update known users from Discord Team based on both Discord user email and SeAT user email.
                     </span>
                 </div>
             </div>
@@ -157,6 +164,12 @@
 
         $('#secret-eraser').on('click', function(){
             var discord_secret = $('#discord-configuration-secret');
+            discord_secret.val('');
+            discord_secret.removeAttr("readonly");
+        });
+
+        $('#bot-eraser').on('click', function(){
+            var discord_secret = $('#discord-configuration-bot');
             discord_secret.val('');
             discord_secret.removeAttr("readonly");
         });

@@ -32,7 +32,7 @@ class OAuthController extends Controller
      * Scopes used in OAuth flow with Discord
      */
     const SCOPES = [
-        'bot', 'email'
+        'bot', 'guilds.join',
     ];
 
     /**
@@ -44,23 +44,13 @@ class OAuthController extends Controller
     {
         $state = time();
 
-        if (
-        (setting('warlof.discord-connector.credentials.client_id', true) == $request->input('discord-configuration-client')) &&
-        (setting('warlof.discord-connector.credentials.client_secret', true) == $request->input('discord-configuration-secret')) &&
-        ($request->input('discord-configuration-verification') != '')) {
-            setting([
-                'warlof.discord-connector.credentials.verification_token',
-                $request->input('discord-configuration-verification')
-            ], true);
-            return redirect()->back()->with('success', 'Change has been successfully applied.');
-        }
-
         // store data into the session until OAuth confirmation
-        session()->put('warlof.discord-connector.credentials', [
-            'client_id' => $request->input('discord-configuration-client'),
+        session(['warlof.discord-connector.credentials' => [
+            'state'         => $state,
+            'client_id'     => $request->input('discord-configuration-client'),
             'client_secret' => $request->input('discord-configuration-secret'),
-            'state' => $state
-        ]);
+            'bot_token'     => $request->input('discord-configuration-bot'),
+        ]]);
 
         return redirect($this->oAuthAuthorization($request->input('discord-configuration-client'), $state));
     }
@@ -73,13 +63,17 @@ class OAuthController extends Controller
     public function callback(Request $request)
     {
         // get back pending OAuth credentials validation from session
-        $oauthCredentials = session()->get('warlof.discord-connector.credentials');
+        $oauth_credentials = $request->session()->get('warlof.discord-connector.credentials');
 
-        session()->forget('warlof.discord-connector.credentials');
+        $request->session()->forget('warlof.discord-connector.credentials');
+
+        if (! $this->isValidCallback($oauth_credentials))
+            return redirect()->route('home')
+                ->with('error', 'An error occurred while processing the request. For some reason, your session was not met system requirement.');
 
         // ensure request is legitimate
-        if ($oauthCredentials['state'] != $request->input('state')) {
-            redirect()->back()
+        if ($oauth_credentials['state'] != $request->input('state')) {
+            return redirect()->back()
                 ->with('error', 'An error occurred while getting back the token. Returned state value is wrong. ' .
                     'In order to prevent any security issue, we stopped transaction.');
         }
@@ -87,33 +81,17 @@ class OAuthController extends Controller
         // validating Discord credentials
         try {
 
-            $payload = [
-                'client_id' => $oauthCredentials['client_id'],
-                'client_secret' => $oauthCredentials['client_secret'],
-                'grant_type' => 'authorization_code',
-                'code' => $request->input('code'),
-                'scopes' => implode(self::SCOPES, ' '),
-            ];
+            $token = $this->exchangeToken($oauth_credentials['client_id'], $oauth_credentials['client_secret'], $request->input('code'));
 
-            $response = (new Client())->request('POST', 'https://discordapp.com/api/oauth2/token', [
-                'form_params' => $payload
-            ]);
-
-            if ($response->getStatusCode() != 200)
-                throw new Exception($response->getBody(), $response->getStatusCode());
-
-            $result = json_decode($response->getBody(), true);
-
-            if ($result == null)
-                throw new Exception("response from Discord was empty.");
-
-            setting(['warlof.discord-connector.credentials.client_id', $oauthCredentials['client_id']], true);
-            setting(['warlof.discord-connector.credentials.client_secret', $oauthCredentials['client_secret']], true);
+            setting(['warlof.discord-connector.credentials.client_id', $oauth_credentials['client_id']], true);
+            setting(['warlof.discord-connector.credentials.client_secret', $oauth_credentials['client_secret']], true);
             setting(['warlof.discord-connector.credentials.token', [
-                'access' => $result['access_token'],
-                'refresh' => $result['refresh_token'],
-                'expires' => carbon(array_first($response->getHeader('Date')))->addSeconds($result['expires_in'])->toDateTimeString(),
+                'access'  => $token['access_token'],
+                'refresh' => $token['refresh_token'],
+                'expires' => carbon($token['request_date'])->addSeconds($token['expires_in'])->toDateTimeString(),
+                'scope'  => $token['scope'],
             ]], true);
+            setting(['warlof.discord-connector.credentials.bot_token', $oauth_credentials['bot_token']], true);
             setting(['warlof.discord-connector.credentials.guild_id', $request->input('guild_id')], true);
 
         } catch (Exception $e) {
@@ -126,6 +104,13 @@ class OAuthController extends Controller
             ->with('success', 'The bot credentials has been set.');
     }
 
+    /**
+     * Return an authorization uri with presets scopes
+     *
+     * @param $clientId
+     * @param $state
+     * @return string
+     */
     private function oAuthAuthorization($clientId, $state)
     {
         $baseUri = 'https://discordapp.com/api/oauth2/authorize?';
@@ -133,9 +118,71 @@ class OAuthController extends Controller
         return $baseUri . http_build_query([
             'response_type' => 'code',
             'client_id'     => $clientId,
-            'permissions'   => 402653187,
+            'permissions'   => 469762055,
             'scope'         => implode(' ', self::SCOPES),
-            'state'         => $state
+            'state'         => $state,
+            'redirect_uri'  => route('discord-connector.oauth.callback'),
         ]);
+    }
+
+    /**
+     * Exchange an Authorization Code with an Access Token
+     *
+     * @param string $client_id
+     * @param string $client_secret
+     * @param string $code
+     * @return array
+     * @throws Exception
+     */
+    private function exchangeToken(string $client_id, string $client_secret, string $code)
+    {
+        $payload = [
+            'client_id'     => $client_id,
+            'client_secret' => $client_secret,
+            'grant_type'    => 'authorization_code',
+            'code'          => $code,
+            'redirect_uri'  => route('discord-connector.oauth.callback'),
+            'scope'         => implode(self::SCOPES, ' '),
+        ];
+
+        $request = (new Client())->request('POST', 'https://discordapp.com/api/oauth2/token', [
+            'form_params' => $payload
+        ]);
+
+        $response = json_decode($request->getBody(), true);
+
+        if (is_null($response))
+            throw new Exception("response from Discord was empty.");
+
+        return array_merge($response, [
+            'request_date' => array_first($request->getHeader('Date')),
+        ]);
+    }
+
+    /**
+     * Ensure an array is containing all expected values in a valid callback session
+     *
+     * @param $session_content
+     * @return bool
+     */
+    private function isValidCallback($session_content)
+    {
+        $expected_array_keys = ['state', 'client_id', 'client_secret', 'bot_token'];
+        $i = count($expected_array_keys);
+
+        if (is_null($session_content))
+            return false;
+
+        if (! is_array($session_content))
+            return false;
+
+        while ($i > 0) {
+            $i--;
+
+            if (! array_key_exists($expected_array_keys[$i], $session_content))
+                return false;
+        }
+
+        return true;
     }
 }
