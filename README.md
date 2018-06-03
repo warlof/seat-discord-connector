@@ -62,6 +62,7 @@ Confirm using the `Update` button which will redirect you to Discord SSO.
 In the list, select the server where the SeAT Bot have to be install, leave permissions as it and click on `Authorize` button.
 
 ![discord setup](./docs/img/connector-setup.png)
+
 *My apologies for all that french stuff, but Discord SSO is using browser settings to show content. Despite of the language, content should be similar in all countries.*
 
 Once you've been redirected back to SeAT, you can hit the `Update Discord Roles` green button which will seed SeAT with Roles available on Discord.
@@ -93,6 +94,7 @@ This will redirect your to Discord SSO with a simple form informing you that the
 Simply confirm using the `Authorize` button which will redirect you to the SeAT homepage with a green confirmation box.
 
 ![discord link](./docs/img/connector-join.png)
+
 *My apologies for all that french stuff, but Discord SSO is using browser settings to show content. Despite of the language, content should be similar in all countries.*
 
 You'll be invited automatically to the Discord Server and attached channels.
