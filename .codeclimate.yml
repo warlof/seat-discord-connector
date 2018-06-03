@@ -10,9 +10,9 @@ engines:
   phpmd:
     enabled: true
     checks:
-      Naming/ShortMethodName:
+      Controversial/CamelCaseVariableName:
         enabled: false
-      CleanCode/StaticAccess:
+      Controversial/CamelCaseParameterName:
         enabled: false
 ratings:
   paths:
