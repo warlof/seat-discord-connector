@@ -97,13 +97,13 @@ class Invite extends DiscordJobBase
         $new_nickname = optional($this->discord_user->group->main_character)->name;
 
         $user = $driver->guild->addGuildMember([
-            'user.id'  => $this->discord_user->discord_id,
-            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-            'nick'     => ! is_null($new_nickname) ? $new_nickname : $this->discord_user->nick,
+            'user.id'      => $this->discord_user->discord_id,
+            'guild.id'     => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            'nick'         => ! is_null($new_nickname) ? $new_nickname : $this->discord_user->nick,
             'access_token' => $this->getAccessToken(),
         ]);
 
-        if (! is_null($user->nick)) {
+        if (property_exists($user, 'nick') && ! is_null($user->nick)) {
             $this->discord_user->nick = $user->nick;
             $this->discord_user->save();
         }

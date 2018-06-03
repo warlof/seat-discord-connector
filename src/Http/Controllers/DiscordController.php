@@ -47,11 +47,13 @@ class DiscordController extends Controller
 
         if ($discord_id != '') {
 
-            if (($discord_user = DiscordUser::where('slack_id', $discord_id)->first()) != null) {
+            if (($discord_user = DiscordUser::where('discord_id', $discord_id)->first()) != null) {
+                $msg = sprintf('System successfully remove the mapping between SeAT (%s) and Discord (%s)',
+                    optional($discord_user->group->main_character)->name, $discord_user->nick);
+
                 $discord_user->delete();
 
-                return redirect()->back()->with('success', 'System successfully remove the mapping between SeAT (' .
-                    $discord_user->user->name . ') and Discord (' . $discord_user->nick . ').');
+                return redirect()->back()->with('success', $msg);
             }
 
             return redirect()->back()->with('error', sprintf(

@@ -24,7 +24,7 @@ Route::group([
 ], function() {
 
     Route::group([
-        'middleware' => 'web'
+        'middleware' => ['web', 'auth'],
     ], function() {
 
         Route::get('/server/join', [

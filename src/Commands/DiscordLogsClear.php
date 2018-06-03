@@ -32,12 +32,12 @@ class DiscordLogsClear extends Command
     /**
      * @var string
      */
-    protected $signature = 'slack:logs:clear';
+    protected $signature = 'discord:logs:clear';
 
     /**
      * @var string
      */
-    protected $description = 'Clearing slack logs';
+    protected $description = 'Clearing Discord logs';
 
     /**
      * DiscordLogsClear constructor.

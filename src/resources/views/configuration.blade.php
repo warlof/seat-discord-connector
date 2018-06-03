@@ -117,12 +117,12 @@
             <div class="form-group">
                 <div class="col-md-12">
                     @if(setting('warlof.discord-connector.credentials.token', true) == '')
-                        <a href="#" type="button" class="btn btn-danger btn-md col-md-12 disabled" role="button">Kick everybody</a>
+                        <a href="#" type="button" class="btn btn-danger btn-md col-md-12 disabled" role="button">Reset everybody</a>
                     @else
-                        <a href="{{ route('discord-connector.command.run', ['commandName' => 'discord:user:terminator']) }}" type="button" class="btn btn-danger btn-md col-md-12" role="button">Kick everybody</a>
+                        <a href="{{ route('discord-connector.command.run', ['commandName' => 'discord:user:terminator']) }}" type="button" class="btn btn-danger btn-md col-md-12" role="button">Reset everybody</a>
                     @endif
                     <span class="help-block">
-                        This will kick every user from every conversations into the connected Discord Team. Please proceed carefully.
+                        This will remove roles from every members into the connected Discord Guild. Please proceed carefully.
                     </span>
                 </div>
             </div>

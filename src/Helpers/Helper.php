@@ -120,7 +120,7 @@ class Helper
 
     /**
      * @param string $role_id
-     * @param DiscordUser $slackUser
+     * @param DiscordUser $discord_user
      * @return bool
      */
     public static function isAllowedRole(int $role_id, DiscordUser $discord_user)

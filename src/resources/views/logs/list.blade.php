@@ -9,7 +9,7 @@
             <h3 class="panel-title">Information</h3>
         </div>
         <div class="panel-body">
-            <p>This section display Slack related event.
+            <p>This section display Discord related event.
                 You will for example find which user and when it has been kicked or invited to a channel.</p>
             <p>It will display settings issue as well like if people didn't change their mail address.</p>
         </div>
@@ -51,11 +51,11 @@
             </table>
         </div>
         <div class="panel-footer clearfix">
-            @if($logCount == 0)
+            @if($log_count == 0)
                 <a href="#" type="button" class="btn btn-danger btn-sm pull-right disabled" role="button">
                     Clear</a>
             @else
-                <a href="{{ route('slackbot.command.run', ['commandName' => 'slack:logs:clear']) }}" type="button"
+                <a href="{{ route('discord-connector.command.run', ['command_name' => 'discord:logs:clear']) }}" type="button"
                    class="btn btn-danger btn-sm pull-right" role="button">Clear</a>
             @endif
         </div>
