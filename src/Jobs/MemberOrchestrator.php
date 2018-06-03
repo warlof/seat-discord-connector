@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -20,13 +20,16 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use RestCord\DiscordClient;
 use RestCord\Model\Guild\GuildMember;
+use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 
+/**
+ * Class MemberOrchestrator
+ * @package Warlof\Seat\Connector\Discord\Jobs
+ */
 class MemberOrchestrator extends DiscordJobBase
 {
     /**
@@ -64,10 +67,17 @@ class MemberOrchestrator extends DiscordJobBase
     }
 
     /**
+     * @throws DiscordSettingException
      * @throws \Seat\Services\Exceptions\SettingException
      */
     public function handle()
     {
+        if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
+            throw new DiscordSettingException();
+
+        if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
+            throw new DiscordSettingException();
+
         // in case terminator flag has not been specified, proceed using user defined mapping
         if (! $this->terminator) {
             $this->processMappingBase();
@@ -78,7 +88,7 @@ class MemberOrchestrator extends DiscordJobBase
     }
 
     /**
-     * Set terminator flag to true
+     * Set terminator flag to true.
      */
     public function setTerminatorFlag()
     {
@@ -89,7 +99,9 @@ class MemberOrchestrator extends DiscordJobBase
     }
 
     /**
-     * @param array $members
+     * Prepare roles mapping and update user if required.
+     *
+     * @throws \Seat\Services\Exceptions\SettingException
      */
     private function processMappingBase()
     {
@@ -121,6 +133,13 @@ class MemberOrchestrator extends DiscordJobBase
             $this->updateMemberRoles($roles, $nickname);
     }
 
+    /**
+     * Update Discord user with new role mapping and nickname if required
+     *
+     * @param array $roles
+     * @param string|null $nickname
+     * @throws \Seat\Services\Exceptions\SettingException
+     */
     private function updateMemberRoles(array $roles, string $nickname = null)
     {
         $driver = new DiscordClient([

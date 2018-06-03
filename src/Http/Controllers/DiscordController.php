@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -24,6 +24,10 @@ use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 use Yajra\Datatables\Facades\Datatables;
 
+/**
+ * Class DiscordController
+ * @package Warlof\Seat\Connector\Discord\Http\Controllers
+ */
 class DiscordController extends Controller
 {
     /**
@@ -39,19 +43,19 @@ class DiscordController extends Controller
      */
     public function postRemoveUserMapping()
     {
-        $slackId = request()->input('slack_id');
+        $discord_id = request()->input('discord_id');
 
-        if ($slackId != '') {
+        if ($discord_id != '') {
 
-            if (($slackUser = DiscordUser::where('slack_id', $slackId)->first()) != null) {
-                $slackUser->delete();
+            if (($discord_user = DiscordUser::where('slack_id', $discord_id)->first()) != null) {
+                $discord_user->delete();
 
                 return redirect()->back()->with('success', 'System successfully remove the mapping between SeAT (' .
-                    $slackUser->user->name . ') and Slack (' . $slackUser->name . ').');
+                    $discord_user->user->name . ') and Discord (' . $discord_user->nick . ').');
             }
 
             return redirect()->back()->with('error', sprintf(
-                'System cannot find any suitable mapping for Slack (%s).', $slackId));
+                'System cannot find any suitable mapping for Discord (%s).', $discord_id));
         }
 
         return redirect()->back('error', 'An error occurred while processing the request.');
@@ -60,20 +64,15 @@ class DiscordController extends Controller
     /**
      * @return mixed
      * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Slackbot\Exceptions\DiscordSettingException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\InvalidConfigurationException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\InvalidContainerDataException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\SlackScopeAccessDeniedException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\UriDataMissingException
      */
     public function getUsersData()
     {
         if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
             return Datatables::of(collect([]))->make(true);
 
-        $users = DiscordUser::all();
+        $discord_users = DiscordUser::all();
 
-        return Datatables::of($users)
+        return Datatables::of($discord_users)
             ->addColumn('group_id', function($row){
                 return $row->group_id;
             })

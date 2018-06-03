@@ -18,5 +18,3 @@ ratings:
   paths:
     - "**.js"
     - "**.php"
-exclude_paths:
-  - "tests/"

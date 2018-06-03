@@ -1,18 +1,29 @@
 <?php
 /**
- * User: Warlof Tutsimo <loic.leuilliot@gmail.com>
- * Date: 02/06/2018
- * Time: 19:52
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
+ *
+ * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-
-use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Command\Exception\CommandClientException;
 use RestCord\DiscordClient;
-use Warlof\Seat\Connector\Discord\Exceptions\DiscordApiException;
+use UnexpectedValueException;
+use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Models\DiscordLog;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 
@@ -47,11 +58,23 @@ class Invite extends DiscordJobBase
     }
 
     /**
-     * @throws DiscordApiException
+     * @throws DiscordSettingException
      * @throws \Seat\Services\Exceptions\SettingException
      */
     public function handle()
     {
+        if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
+            throw new DiscordSettingException();
+
+        if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
+            throw new DiscordSettingException();
+
+        if (is_null(setting('warlof.discord-connector.credentials.client_id', true)))
+            throw new DiscordSettingException();
+
+        if (is_null(setting('warlof.discord-connector.credentials.client_secret', true)))
+            throw new DiscordSettingException();
+
         $this->inviteUserIntoGuild();
 
         DiscordLog::create([
@@ -61,6 +84,9 @@ class Invite extends DiscordJobBase
         ]);
     }
 
+    /**
+     * @throws \Seat\Services\Exceptions\SettingException
+     */
     private function inviteUserIntoGuild()
     {
         $driver = new DiscordClient([
@@ -121,7 +147,7 @@ class Invite extends DiscordJobBase
         $response = json_decode($request->getBody(), true);
 
         if (is_null($response))
-            throw new Exception('response from Discord was empty.');
+            throw new UnexpectedValueException('response from Discord was empty.');
 
         $credentials = array_merge($response, [
             'expires_at' => carbon(array_first($request->getHeader('Date')))->addSeconds($response['expires_in']),

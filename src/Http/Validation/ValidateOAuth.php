@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -22,13 +22,23 @@ namespace Warlof\Seat\Connector\Discord\Http\Validation;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Class ValidateOAuth
+ * @package Warlof\Seat\Connector\Discord\Http\Validation
+ */
 class ValidateOAuth extends FormRequest
 {
+    /**
+     * @return bool
+     */
     public function authorize()
     {
         return true;
     }
 
+    /**
+     * @return array
+     */
     public function rules()
     {
         return [

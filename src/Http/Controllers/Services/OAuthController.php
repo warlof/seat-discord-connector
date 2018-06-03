@@ -26,6 +26,10 @@ use Illuminate\Http\Request;
 use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Http\Validation\ValidateOAuth;
 
+/**
+ * Class OAuthController
+ * @package Warlof\Seat\Connector\Discord\Http\Controllers\Services
+ */
 class OAuthController extends Controller
 {
     /**
@@ -107,17 +111,17 @@ class OAuthController extends Controller
     /**
      * Return an authorization uri with presets scopes
      *
-     * @param $clientId
+     * @param $client_id
      * @param $state
      * @return string
      */
-    private function oAuthAuthorization($clientId, $state)
+    private function oAuthAuthorization($client_id, $state)
     {
-        $baseUri = 'https://discordapp.com/api/oauth2/authorize?';
+        $base_uri = 'https://discordapp.com/api/oauth2/authorize?';
 
-        return $baseUri . http_build_query([
+        return $base_uri . http_build_query([
             'response_type' => 'code',
-            'client_id'     => $clientId,
+            'client_id'     => $client_id,
             'permissions'   => 469762055,
             'scope'         => implode(' ', self::SCOPES),
             'state'         => $state,

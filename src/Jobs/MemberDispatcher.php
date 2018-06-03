@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -20,10 +20,14 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use Illuminate\Support\Facades\Cache;
 use RestCord\DiscordClient;
 
-class MemberDispatcher extends DiscordJobBase {
+/**
+ * Class MemberDispatcher
+ * @package Warlof\Seat\Connector\Discord\Jobs
+ */
+class MemberDispatcher extends DiscordJobBase
+{
 
     /**
      * @var array
@@ -50,30 +54,9 @@ class MemberDispatcher extends DiscordJobBase {
 
     /**
      * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Slackbot\Exceptions\DiscordSettingException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\InvalidConfigurationException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\InvalidContainerDataException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\RequestFailedException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\SlackScopeAccessDeniedException
-     * @throws \Warlof\Seat\Slackbot\Repositories\Slack\Exceptions\UriDataMissingException
      */
     public function handle() {
 
-        logger()->debug('Discord Receptionist - Starting job...');
-
-        // resetting cache before queuing jobs
-        Cache::tags(['roles', 'members'])->flush();
-
-        // retrieve information related to the current token
-        // so we can remove the user owner from process since we're not able to do things on ourselves
-        //$token_info = $this->getConnector()->invoke('get', '/auth.test');
-
-        //logger()->debug('Slack Receptionist - Checking token', [
-        //    'owner' => $token_info->user_id,
-        //]);
-
-        // retrieving all conversation from Slack team
-        //$conversations = $this->fetchSlackConversations();
         $driver = new DiscordClient([
             'tokenType' => 'Bot',
             'token'     => setting('warlof.discord-connector.credentials.bot_token', true),
@@ -94,24 +77,5 @@ class MemberDispatcher extends DiscordJobBase {
             dispatch($job);
 
         }
-
-        /*
-        foreach ($conversations as $conversation) {
-
-            // ignoring general channel since it's self handled
-            if ($conversation->is_general)
-                continue;
-
-            // preparing a new orchestrator tied to the current conversation
-            $job = new ConversationOrchestrator($conversation->id, $token_info);
-
-            // in case the dispatcher is running with massive kick flag, forward it to the orchestrator
-            if ($this->terminator)
-                $job->setTerminatorFlag();
-
-            // queuing a new orchestrator for that conversation which will handle delay between kick and invitation
-            dispatch($job);
-        }
-        */
     }
 }

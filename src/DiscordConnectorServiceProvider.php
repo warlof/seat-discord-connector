@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -26,6 +26,10 @@ use Warlof\Seat\Connector\Discord\Commands\DiscordRoleSync;
 use Warlof\Seat\Connector\Discord\Commands\DiscordUserPolicy;
 use Warlof\Seat\Connector\Discord\Commands\DiscordUserTerminator;
 
+/**
+ * Class DiscordConnectorServiceProvider
+ * @package Warlof\Seat\Connector\Discord
+ */
 class DiscordConnectorServiceProvider extends ServiceProvider
 {
     /**
@@ -59,6 +63,9 @@ class DiscordConnectorServiceProvider extends ServiceProvider
             __DIR__ . '/Config/package.sidebar.php', 'package.sidebar');
     }
 
+    /**
+     * Register cli commands
+     */
     private function addCommands()
     {
         $this->commands([
@@ -68,24 +75,36 @@ class DiscordConnectorServiceProvider extends ServiceProvider
             DiscordRoleSync::class,
         ]);
     }
-    
+
+    /**
+     * Import translations
+     */
     private function addTranslations()
     {
         $this->loadTranslationsFrom(__DIR__ . '/lang', 'discord-connector');
     }
-    
+
+    /**
+     * Import routes
+     */
     private function addRoutes()
     {
         if (! $this->app->routesAreCached()) {
             include __DIR__ . '/Http/routes.php';
         }
     }
-    
+
+    /**
+     * Register views
+     */
     private function addViews()
     {
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'discord-connector');
     }
-    
+
+    /**
+     * Import migration and static content
+     */
     private function addPublications()
     {
         $this->publishes([

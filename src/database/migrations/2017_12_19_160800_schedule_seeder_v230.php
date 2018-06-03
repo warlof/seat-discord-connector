@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -22,17 +22,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Seat\Services\Models\Schedule;
 
+/**
+ * Class ScheduleSeederV230
+ */
 class ScheduleSeederV230 extends Migration
 {
+    /**
+     * @var array
+     */
     protected $schedule = [
-        [
-            'command'           => 'discord:user:sync',
-            'expression'        => '*/5 * * * *',
-            'allow_overlap'     => false,
-            'allow_maintenance' => false,
-            'ping_before'       => 'https://discordapp.com',
-            'ping_after'        => null,
-        ],
         [
             'command'           => 'discord:user:policy',
             'expression'        => '*,30 * * * *',
@@ -51,6 +49,9 @@ class ScheduleSeederV230 extends Migration
         ]
     ];
 
+    /**
+     * Seeding schedule table with cron tasks
+     */
     public function up()
     {
         foreach ($this->schedule as $job) {

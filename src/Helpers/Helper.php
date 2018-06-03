@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -20,16 +20,18 @@
 
 namespace Warlof\Seat\Connector\Discord\Helpers;
 
-
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Seat\Eveapi\Models\Character\CharacterInfo;
 use Seat\Eveapi\Models\RefreshToken;
-use Seat\Web\Models\Acl\GroupRole;
 use Seat\Web\Models\Group;
 use Warlof\Seat\Connector\Discord\Models\DiscordRolePublic;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 
+/**
+ * Class Helper
+ * @package Warlof\Seat\Connector\Discord\Helpers
+ */
 class Helper
 {
     /**
@@ -124,10 +126,5 @@ class Helper
     public static function isAllowedRole(int $role_id, DiscordUser $discord_user)
     {
         return in_array($role_id, self::allowedRoles($discord_user));
-    }
-
-    public static function getSlackRedisKey($table, $objectId)
-    {
-        return $table . '.' . $objectId;
     }
 }

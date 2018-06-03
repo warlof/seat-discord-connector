@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -24,14 +24,24 @@ use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Models\DiscordLog;
 use Yajra\Datatables\Facades\Datatables;
 
+/**
+ * Class DiscordLogsController
+ * @package Warlof\Seat\Connector\Discord\Http\Controllers
+ */
 class DiscordLogsController extends Controller
 {
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function getLogs()
     {
-        $logCount = DiscordLog::count();
-        return view('discord-connector::logs.list', compact('logCount'));
+        $log_count = DiscordLog::count();
+        return view('discord-connector::logs.list', compact('log_count'));
     }
 
+    /**
+     * @return mixed
+     */
     public function getJsonLogData()
     {
         $logs = DiscordLog::orderBy('created_at', 'desc')->get();

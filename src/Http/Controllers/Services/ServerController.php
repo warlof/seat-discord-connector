@@ -1,21 +1,38 @@
 <?php
 /**
- * User: Warlof Tutsimo <loic.leuilliot@gmail.com>
- * Date: 02/06/2018
- * Time: 17:34
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
+ *
+ * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Warlof\Seat\Connector\Discord\Http\Controllers\Services;
-
 
 use Exception;
 use GuzzleHttp\Client;
 use RestCord\DiscordClient;
 use RestCord\Model\User\User;
 use Seat\Web\Http\Controllers\Controller;
+use UnexpectedValueException;
 use Warlof\Seat\Connector\Discord\Jobs\Invite;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 
+/**
+ * Class ServerController
+ * @package Warlof\Seat\Connector\Discord\Http\Controllers\Services
+ */
 class ServerController extends Controller
 {
 
@@ -24,6 +41,10 @@ class ServerController extends Controller
         'guilds.join',
     ];
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @throws \Seat\Services\Exceptions\SettingException
+     */
     public function join()
     {
         $state = time();
@@ -39,6 +60,9 @@ class ServerController extends Controller
         return redirect($this->oAuthAuthorization($client_id, $state));
     }
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function callback()
     {
         $state = request()->session()->get('warlof.discord-connector.user.state');
@@ -115,7 +139,7 @@ class ServerController extends Controller
         $response = json_decode($request->getBody(), true);
 
         if (is_null($response))
-            throw new Exception('response from Discord was empty.');
+            throw new UnexpectedValueException('response from Discord was empty.');
 
         return array_merge($response, [
             'expires_at' => carbon(array_first($request->getHeader('Date')))->addSeconds($response['expires_in']),

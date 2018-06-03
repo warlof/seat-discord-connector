@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -20,12 +20,16 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use GuzzleHttp\Client;
 use RestCord\DiscordClient;
-use Warlof\Seat\Connector\Discord\Http\Controllers\Services\OAuthController;
+use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Models\DiscordRole;
 
-class SyncRole extends DiscordJobBase {
+/**
+ * Class SyncRole
+ * @package Warlof\Seat\Connector\Discord\Jobs
+ */
+class SyncRole extends DiscordJobBase
+{
 
     /**
      * @var array
@@ -33,11 +37,17 @@ class SyncRole extends DiscordJobBase {
     protected $tags = ['sync', 'conversations'];
 
     /**
-     * @throws \Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException
+     * @throws DiscordSettingException
+     * @throws \Seat\Services\Exceptions\SettingException
      */
     public function handle()
     {
-        // TODO : move into container
+        if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
+            throw new DiscordSettingException();
+
+        if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
+            throw new DiscordSettingException();
+
         $driver = new DiscordClient([
             'tokenType' => 'Bot',
             'token' => setting('warlof.discord-connector.credentials.bot_token', true),
@@ -57,11 +67,9 @@ class SyncRole extends DiscordJobBase {
 
             $conversations_buffer[] = $role->id;
 
-            DiscordRole::updateOrCreate(
-                [
+            DiscordRole::updateOrCreate([
                     'id' => $role->id,
-                ],
-                [
+                ], [
                     'name'       => $role->name,
                 ]);
 

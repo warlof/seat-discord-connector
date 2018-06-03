@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -26,8 +26,15 @@ use Illuminate\Support\Facades\Artisan;
 use Parsedown;
 use Seat\Web\Http\Controllers\Controller;
 
+/**
+ * Class DiscordSettingsController
+ * @package Warlof\Seat\Connector\Discord\Http\Controllers
+ */
 class DiscordSettingsController extends Controller
 {
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function getConfiguration()
     {
         $changelog = $this->getChangelog();
@@ -35,25 +42,32 @@ class DiscordSettingsController extends Controller
         return view('discord-connector::configuration', compact('changelog'));
     }
 
-    public function getSubmitJob($commandName)
+    /**
+     * @param $command_name
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getSubmitJob($command_name)
     {
-        $acceptedCommands = [
+        $accepted_commands = [
             'discord:role:sync',
             'discord:user:sync',
             'discord:user:terminator',
             'discord:logs:clear'
         ];
 
-        if (!in_array($commandName, $acceptedCommands)) {
+        if (! in_array($command_name, $accepted_commands)) {
             abort(400);
         }
 
-        Artisan::call($commandName);
+        Artisan::call($command_name);
 
         return redirect()->back()
             ->with('success', 'The command has been run.');
     }
 
+    /**
+     * @return string
+     */
     private function getChangelog() : string
     {
         try {

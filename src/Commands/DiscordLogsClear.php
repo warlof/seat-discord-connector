@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -23,17 +23,33 @@ namespace Warlof\Seat\Connector\Discord\Commands;
 use Illuminate\Console\Command;
 use Warlof\Seat\Connector\Discord\Models\DiscordLog;
 
+/**
+ * Class DiscordLogsClear
+ * @package Warlof\Seat\Connector\Discord\Commands
+ */
 class DiscordLogsClear extends Command
 {
+    /**
+     * @var string
+     */
     protected $signature = 'slack:logs:clear';
 
+    /**
+     * @var string
+     */
     protected $description = 'Clearing slack logs';
 
+    /**
+     * DiscordLogsClear constructor.
+     */
     public function __construct()
     {
         parent::__construct();
     }
 
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
         DiscordLog::truncate();

@@ -23,10 +23,16 @@ namespace Warlof\Seat\Connector\Discord\Exceptions;
 use Exception;
 
 /**
- * Class DiscordApiException
+ * Class DiscordSettingException
  * @package Warlof\Seat\Connector\Discord\Exceptions
  */
-class DiscordApiException extends Exception
+class DiscordSettingException extends Exception
 {
-
+    /**
+     * DiscordSettingException constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct('Discord connector has not been set yet. Missing either OAuth or Bot tokens.');
+    }
 }

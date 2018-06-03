@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -17,11 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace Warlof\Seat\Connector\Discord\Commands;
 
 use Illuminate\Console\Command;
 use Warlof\Seat\Connector\Discord\Jobs\MemberDispatcher;
 
+/**
+ * Class DiscordUserTerminator
+ * @package Warlof\Seat\Connector\Discord\Commands
+ */
 class DiscordUserTerminator extends Command
 {
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of slackbot and provide user synchronization between both SeAT and a Slack Team
+ * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
@@ -37,6 +37,10 @@ use Warlof\Seat\Connector\Discord\Models\DiscordRoleRole;
 use Warlof\Seat\Connector\Discord\Models\DiscordRoleTitle;
 use Warlof\Seat\Connector\Discord\Models\DiscordRoleGroup;
 
+/**
+ * Class DiscordJsonController
+ * @package Warlof\Seat\Connector\Discord\Http\Controllers
+ */
 class DiscordJsonController extends Controller
 {
     /**
@@ -48,6 +52,9 @@ class DiscordJsonController extends Controller
         $discord_id = $request->input('discord_id');
 
         if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
+            return response()->json([]);
+
+        if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
             return response()->json([]);
 
         $driver = new DiscordClient([
@@ -65,12 +72,15 @@ class DiscordJsonController extends Controller
         return response()->json($roles);
     }
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getJsonTitle()
     {
-        $corporationId = request()->input('corporation_id');
+        $corporation_id = request()->input('corporation_id');
 
-        if (!empty($corporationId)) {
-            $titles = CorporationTitle::where('corporation_id', $corporationId)->select('title_id', 'name')
+        if (!empty($corporation_id)) {
+            $titles = CorporationTitle::where('corporation_id', $corporation_id)->select('title_id', 'name')
                 ->get();
 
             return response()->json($titles->map(
@@ -86,6 +96,9 @@ class DiscordJsonController extends Controller
         return response()->json([]);
     }
 
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function getRelations()
     {
         $discord_role_filters = DiscordRolePublic::all();
@@ -110,12 +123,16 @@ class DiscordJsonController extends Controller
     // Remove access
     //
 
+    /**
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function getRemovePublic($discord_role_id)
     {
-        $channelPublic = DiscordRolePublic::where('discord_role_id', $discord_role_id);
+        $channel_public = DiscordRolePublic::where('discord_role_id', $discord_role_id);
 
-        if ($channelPublic != null) {
-            $channelPublic->delete();
+        if ($channel_public != null) {
+            $channel_public->delete();
             return redirect()->back()
                 ->with('success', 'The public Discord relation has been removed');
         }
@@ -124,13 +141,18 @@ class DiscordJsonController extends Controller
             ->with('error', 'An error occurs while trying to remove the public Discord relation.');
     }
 
+    /**
+     * @param $group_id
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function getRemoveUser($group_id, $discord_role_id)
     {
-        $channelUser = DiscordRoleGroup::where('group_id', $group_id)
+        $channel_user = DiscordRoleGroup::where('group_id', $group_id)
             ->where('discord_role_id', $discord_role_id);
 
-        if ($channelUser != null) {
-            $channelUser->delete();
+        if ($channel_user != null) {
+            $channel_user->delete();
             return redirect()->back()
                 ->with('success', 'The Discord relation for the user has been removed');
         }
@@ -139,13 +161,18 @@ class DiscordJsonController extends Controller
             ->with('error', 'An error occurs while trying to remove the Discord relation for the user.');
     }
 
-    public function getRemoveRole($roleId, $discord_role_id)
+    /**
+     * @param $role_id
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getRemoveRole($role_id, $discord_role_id)
     {
-        $channelRole = DiscordRoleRole::where('role_id', $roleId)
+        $channel_role = DiscordRoleRole::where('role_id', $role_id)
             ->where('discord_role_id', $discord_role_id);
 
-        if ($channelRole != null) {
-            $channelRole->delete();
+        if ($channel_role != null) {
+            $channel_role->delete();
             return redirect()->back()
                 ->with('success', 'The Discord relation for the role has been removed');
         }
@@ -154,13 +181,18 @@ class DiscordJsonController extends Controller
             ->with('error', 'An error occurs while trying to remove the Discord relation for the role.');
     }
 
-    public function getRemoveCorporation($corporationId, $discord_role_id)
+    /**
+     * @param $corporation_id
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getRemoveCorporation($corporation_id, $discord_role_id)
     {
-        $channelCorporation = DiscordRoleCorporation::where('corporation_id', $corporationId)
+        $channel_corporation = DiscordRoleCorporation::where('corporation_id', $corporation_id)
             ->where('discord_role_id', $discord_role_id);
 
-        if ($channelCorporation != null) {
-            $channelCorporation->delete();
+        if ($channel_corporation != null) {
+            $channel_corporation->delete();
             return redirect()->back()
                 ->with('success', 'The Discord relation for the corporation has been removed');
         }
@@ -169,14 +201,20 @@ class DiscordJsonController extends Controller
             ->with('error', 'An error occurs while trying to remove the Discord relation for the corporation.');
     }
 
-    public function getRemoveTitle($corporationId, $titleId, $discord_role_id)
+    /**
+     * @param $corporation_id
+     * @param $title_id
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getRemoveTitle($corporation_id, $title_id, $discord_role_id)
     {
-        $channelTitle = DiscordRoleTitle::where('corporation_id', $corporationId)
-            ->where('title_id', $titleId)
+        $channel_title = DiscordRoleTitle::where('corporation_id', $corporation_id)
+            ->where('title_id', $title_id)
             ->where('discord_role_id', $discord_role_id);
 
-        if ($channelTitle != null) {
-            $channelTitle->delete();
+        if ($channel_title != null) {
+            $channel_title->delete();
             return redirect()->back()
                 ->with('success', 'The Discord relation for the title has been removed');
         }
@@ -185,13 +223,18 @@ class DiscordJsonController extends Controller
             ->with('error', 'An error occurred while trying to remove the Discord relation for the title.');
     }
 
-    public function getRemoveAlliance($allianceId, $discord_role_id)
+    /**
+     * @param $alliance_id
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getRemoveAlliance($alliance_id, $discord_role_id)
     {
-        $channelAlliance = DiscordRoleAlliance::where('alliance_id', $allianceId)
+        $channel_alliance = DiscordRoleAlliance::where('alliance_id', $alliance_id)
             ->where('discord_role_id', $discord_role_id);
 
-        if ($channelAlliance != null) {
-            $channelAlliance->delete();
+        if ($channel_alliance != null) {
+            $channel_alliance->delete();
             return redirect()->back()
                 ->with('success', 'The Discord relation for the alliance has been removed');
         }
@@ -204,13 +247,17 @@ class DiscordJsonController extends Controller
     // Grant access
     //
 
+    /**
+     * @param AddRelation $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function postRelation(AddRelation $request)
     {
-        $groupId = $request->input('discord-group-id');
-        $roleId = $request->input('discord-role-id');
-        $corporationId = $request->input('discord-corporation-id');
-        $titleId = $request->input('discord-title-id');
-        $allianceId = $request->input('discord-alliance-id');
+        $group_id = $request->input('discord-group-id');
+        $role_id = $request->input('discord-role-id');
+        $corporation_id = $request->input('discord-corporation-id');
+        $title_id = $request->input('discord-title-id');
+        $alliance_id = $request->input('discord-alliance-id');
         $discord_role_id = $request->input('discord-discord-role-id');
 
         // use a single post route in order to create any kind of relation
@@ -219,15 +266,15 @@ class DiscordJsonController extends Controller
             case 'public':
                 return $this->postPublicRelation($discord_role_id);
             case 'group':
-                return $this->postGroupRelation($discord_role_id, $groupId);
+                return $this->postGroupRelation($discord_role_id, $group_id);
             case 'role':
-                return $this->postRoleRelation($discord_role_id, $roleId);
+                return $this->postRoleRelation($discord_role_id, $role_id);
             case 'corporation':
-                return $this->postCorporationRelation($discord_role_id, $corporationId);
+                return $this->postCorporationRelation($discord_role_id, $corporation_id);
             case 'title':
-                return $this->postTitleRelation($discord_role_id, $corporationId, $titleId);
+                return $this->postTitleRelation($discord_role_id, $corporation_id, $title_id);
             case 'alliance':
-                return $this->postAllianceRelation($discord_role_id, $allianceId);
+                return $this->postAllianceRelation($discord_role_id, $alliance_id);
             default:
                 return redirect()->back()
                     ->with('error', 'Unknown relation type');
@@ -238,6 +285,10 @@ class DiscordJsonController extends Controller
     // Helper methods
     //
 
+    /**
+     * @param $discord_role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     private function postPublicRelation($discord_role_id)
     {
         if (DiscordRolePublic::find($discord_role_id) == null) {
@@ -254,15 +305,20 @@ class DiscordJsonController extends Controller
             ->with('error', 'This relation already exists');
     }
 
-    private function postGroupRelation($discord_role_id, $groupId)
+    /**
+     * @param $discord_role_id
+     * @param $group_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function postGroupRelation($discord_role_id, $group_id)
     {
         $relation = DiscordRoleGroup::where('discord_role_id', '=', $discord_role_id)
-            ->where('group_id', '=', $groupId)
+            ->where('group_id', '=', $group_id)
             ->get();
 
         if ($relation->count() == 0) {
             DiscordRoleGroup::create([
-                'group_id' => $groupId,
+                'group_id' => $group_id,
                 'discord_role_id' => $discord_role_id,
                 'enabled' => true
             ]);
@@ -275,15 +331,20 @@ class DiscordJsonController extends Controller
             ->with('error', 'This relation already exists');
     }
 
-    private function postRoleRelation($discord_role_id, $roleId)
+    /**
+     * @param $discord_role_id
+     * @param $role_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function postRoleRelation($discord_role_id, $role_id)
     {
-        $relation = DiscordRoleRole::where('role_id', '=', $roleId)
+        $relation = DiscordRoleRole::where('role_id', '=', $role_id)
             ->where('discord_role_id', '=', $discord_role_id)
             ->get();
 
         if ($relation->count() == 0) {
             DiscordRoleRole::create([
-                'role_id' => $roleId,
+                'role_id' => $role_id,
                 'discord_role_id' => $discord_role_id,
                 'enabled' => true
             ]);
@@ -296,15 +357,20 @@ class DiscordJsonController extends Controller
             ->with('error', 'This relation already exists');
     }
 
-    private function postCorporationRelation($discord_role_id, $corporationId)
+    /**
+     * @param $discord_role_id
+     * @param $corporation_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function postCorporationRelation($discord_role_id, $corporation_id)
     {
-        $relation = DiscordRoleCorporation::where('corporation_id', '=', $corporationId)
+        $relation = DiscordRoleCorporation::where('corporation_id', '=', $corporation_id)
             ->where('discord_role_id', '=', $discord_role_id)
             ->get();
 
         if ($relation->count() == 0) {
             DiscordRoleCorporation::create([
-                'corporation_id' => $corporationId,
+                'corporation_id' => $corporation_id,
                 'discord_role_id' => $discord_role_id,
                 'enabled' => true
             ]);
@@ -317,17 +383,23 @@ class DiscordJsonController extends Controller
             ->with('error', 'This relation already exists');
     }
 
-    private function postTitleRelation($discord_role_id, $corporationId, $titleId)
+    /**
+     * @param $discord_role_id
+     * @param $corporation_id
+     * @param $title_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function postTitleRelation($discord_role_id, $corporation_id, $title_id)
     {
-        $relation = DiscordRoleTitle::where('corporation_id', '=', $corporationId)
-            ->where('title_id', '=', $titleId)
+        $relation = DiscordRoleTitle::where('corporation_id', '=', $corporation_id)
+            ->where('title_id', '=', $title_id)
             ->where('discord_role_id', '=', $discord_role_id)
             ->get();
 
         if ($relation->count() == 0) {
             DiscordRoleTitle::create([
-                'corporation_id' => $corporationId,
-                'title_id' => $titleId,
+                'corporation_id' => $corporation_id,
+                'title_id' => $title_id,
                 'discord_role_id' => $discord_role_id,
                 'enabled' => true
             ]);
@@ -340,15 +412,20 @@ class DiscordJsonController extends Controller
             ->with('error', 'This relation already exists');
     }
 
-    private function postAllianceRelation($discord_role_id, $allianceId)
+    /**
+     * @param $discord_role_id
+     * @param $alliance_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function postAllianceRelation($discord_role_id, $alliance_id)
     {
-        $relation = DiscordRoleAlliance::where('alliance_id', '=', $allianceId)
+        $relation = DiscordRoleAlliance::where('alliance_id', '=', $alliance_id)
             ->where('discord_role_id', '=', $discord_role_id)
             ->get();
 
         if ($relation->count() == 0) {
             DiscordRoleAlliance::create([
-                'alliance_id' => $allianceId,
+                'alliance_id' => $alliance_id,
                 'discord_role_id' => $discord_role_id,
                 'enabled' => true
             ]);
