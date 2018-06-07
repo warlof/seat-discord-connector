@@ -48,7 +48,7 @@ class DiscordUser extends Model
      * @var array
      */
     protected $fillable = [
-        'group_id', 'discord_id', 'nick', 'refresh_token', 'access_token', 'expires_at',
+        'group_id', 'discord_id', 'nick', 'scope', 'refresh_token', 'access_token', 'expires_at',
     ];
 
     /**

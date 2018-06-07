@@ -173,6 +173,7 @@ class ServerController extends Controller
         ], [
             'discord_id'    => $user->id,
             'nick'          => $user->username,
+            'scope'         => $credentials['scope'],
             'refresh_token' => $credentials['refresh_token'],
             'access_token'  => $credentials['access_token'],
             'expires_at'    => $credentials['expires_at'],
