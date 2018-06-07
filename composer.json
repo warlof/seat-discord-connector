@@ -20,7 +20,7 @@
             "email": "loic.leuilliot@gmail.com"
         }
     ],
-    "minimum-stability": "beta",
+    "minimum-stability": "dev",
     "extra": {
         "laravel": {
             "providers": [
