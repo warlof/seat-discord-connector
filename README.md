@@ -107,3 +107,12 @@ Simply confirm using the `Authorize` button which will redirect you to the SeAT 
 *My apologies for all that french stuff, but Discord SSO is using browser settings to show content. Despite of the language, content should be similar in all countries.*
 
 You'll be invited automatically to the Discord Server and attached channels.
+
+# Known issues
+
+Here is a quick list of known issues (and their solution if applicable).
+Purpose is to assist you in troubleshooting and lead to a resolution path.
+
+| Problem | Solution |
+|---------|----------|
+| My job `MemberOrchestrator` is failing with the message `Client error: PATCH https://discordapp.com/api/v6/guilds/302770933452636161/members/353886200135942144 resulted in a 403 FORBIDDEN` | Ensure the bot role is at top level of your roles list (use drag and drop to sort them) |
