@@ -69,6 +69,10 @@ class MemberDispatcher extends DiscordJobBase
 
         foreach ($members as $member) {
 
+            // ignore any bot from the process
+            if ($member->user->bot)
+                continue;
+
             $job = new MemberOrchestrator($member);
 
             if ($this->terminator)
