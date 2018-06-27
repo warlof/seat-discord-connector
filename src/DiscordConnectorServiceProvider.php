@@ -21,6 +21,7 @@
 namespace Warlof\Seat\Connector\Discord;
 
 use Illuminate\Support\ServiceProvider;
+use RestCord\DiscordClient;
 use Warlof\Seat\Connector\Discord\Commands\DiscordLogsClear;
 use Warlof\Seat\Connector\Discord\Commands\DiscordRoleSync;
 use Warlof\Seat\Connector\Discord\Commands\DiscordUserPolicy;
@@ -61,6 +62,21 @@ class DiscordConnectorServiceProvider extends ServiceProvider
         
         $this->mergeConfigFrom(
             __DIR__ . '/Config/package.sidebar.php', 'package.sidebar');
+
+        // push discord client into container as singleton if token has been set
+        $bot_token = setting('warlof.discord-connector.credentials.bot_token', true);
+
+        if (! is_null($bot_token)) {
+            $this->app->singleton('discord', function () {
+                return new DiscordClient([
+                    'tokenType' => 'Bot',
+                    'token' => setting('warlof.discord-connector.credentials.bot_token', true),
+                ]);
+            });
+        }
+
+        // bind discord alias to DiscordClient
+        $this->app->alias('discord', DiscordClient::class);
     }
 
     /**

@@ -142,11 +142,6 @@ class MemberOrchestrator extends DiscordJobBase
      */
     private function updateMemberRoles(array $roles, string $nickname = null)
     {
-        $driver = new DiscordClient([
-            'tokenType' => 'Bot',
-            'token'     => setting('warlof.discord-connector.credentials.bot_token', true),
-        ]);
-
         $options = [
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
             'user.id'  => $this->member->user->id,
@@ -158,6 +153,6 @@ class MemberOrchestrator extends DiscordJobBase
                 'nick' => $nickname
             ]);
 
-        $driver->guild->modifyGuildMember($options);
+        app('discord')->guild->modifyGuildMember($options);
     }
 }

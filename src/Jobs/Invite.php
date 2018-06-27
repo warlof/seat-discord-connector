@@ -89,14 +89,9 @@ class Invite extends DiscordJobBase
      */
     private function inviteUserIntoGuild()
     {
-        $driver = new DiscordClient([
-            'tokenType' => 'Bot',
-            'token'     => setting('warlof.discord-connector.credentials.bot_token', true),
-        ]);
-
         $new_nickname = optional($this->discord_user->group->main_character)->name;
 
-        $user = $driver->guild->addGuildMember([
+        $user = app('discord')->guild->addGuildMember([
             'user.id'      => $this->discord_user->discord_id,
             'guild.id'     => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
             'nick'         => ! is_null($new_nickname) ? $new_nickname : $this->discord_user->nick,

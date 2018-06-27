@@ -48,12 +48,7 @@ class SyncRole extends DiscordJobBase
         if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
             throw new DiscordSettingException();
 
-        $driver = new DiscordClient([
-            'tokenType' => 'Bot',
-            'token' => setting('warlof.discord-connector.credentials.bot_token', true),
-        ]);
-
-        $discord_roles = $driver->guild->getGuildRoles([
+        $discord_roles = app('discord')->guild->getGuildRoles([
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
         ]);
 

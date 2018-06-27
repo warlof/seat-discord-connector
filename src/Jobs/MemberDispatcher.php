@@ -55,14 +55,9 @@ class MemberDispatcher extends DiscordJobBase
     /**
      * @throws \Seat\Services\Exceptions\SettingException
      */
-    public function handle() {
-
-        $driver = new DiscordClient([
-            'tokenType' => 'Bot',
-            'token'     => setting('warlof.discord-connector.credentials.bot_token', true),
-        ]);
-
-        $members = $driver->guild->listGuildMembers([
+    public function handle()
+    {
+        $members = app('discord')->guild->listGuildMembers([
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
             'limit'    => 1000,
         ]);
