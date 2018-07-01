@@ -46,7 +46,7 @@ class CreateDiscordTables extends Migration
             $table->string('id');
             $table->string('name');
             $table->timestamps();
-            
+
             $table->primary('id', 'discord_roles_primary');
         });
 

@@ -38,7 +38,7 @@ class DiscordUserPolicy extends Command
     /**
      * @var string
      */
-    protected $description = 'Fire a job which will invite or kick SeAT user into Discord roles according to your policy.';
+    protected $description = 'Queue a job which will add/remove roles from user on Discord according to your policy.';
 
     /**
      * Execute the console command

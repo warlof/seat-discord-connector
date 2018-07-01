@@ -31,7 +31,7 @@ use Seat\Eveapi\Traits\HasCompositePrimaryKey;
  */
 class DiscordRoleTitle extends Model
 {
-    
+
     use HasCompositePrimaryKey;
 
     /**

@@ -80,7 +80,8 @@ class ServerController extends Controller
 
             if (! in_array('identify', explode(' ', $credentials['scope'])))
                 return redirect()->route('home')
-                    ->with('error', 'We were not able to retrieve your user information. Did you alter authorization ?');
+                    ->with('error', 'We were not able to retrieve your user information. ' .
+                        'Did you alter authorization ?');
 
             $user_information = $this->retrievingUserInformation($credentials['access_token']);
 

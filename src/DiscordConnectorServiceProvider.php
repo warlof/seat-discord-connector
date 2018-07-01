@@ -63,7 +63,7 @@ class DiscordConnectorServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(
             __DIR__ . '/Config/discord-connector.permissions.php', 'web.permissions');
-        
+
         $this->mergeConfigFrom(
             __DIR__ . '/Config/package.sidebar.php', 'package.sidebar');
     }

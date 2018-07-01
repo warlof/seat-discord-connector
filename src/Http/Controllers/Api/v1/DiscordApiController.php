@@ -3,7 +3,7 @@
  * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
  * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,7 +42,11 @@ class DiscordApiController extends ApiController
      *              type="array",
      *              @SWG\Items(ref="#/definitions/DiscordUser")
      *          ),
-     *          examples={"application/json": {{"group_id":2, "discord_id":353886200135942144, "nick":"Warlof Tutsimo"}}}
+     *          examples={"application/json":
+     *              {
+     *                  {"group_id":2, "discord_id":353886200135942144, "nick":"Warlof Tutsimo"}
+     *              }
+     *          }
      *     ),
      *     @SWG\Response(response=400, description="Bad request"),
      *     @SWG\Response(response=401, description="Unauthorized"),

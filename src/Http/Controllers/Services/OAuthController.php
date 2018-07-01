@@ -69,16 +69,17 @@ class OAuthController extends Controller
     public function callback(Request $request)
     {
         // get back pending OAuth credentials validation from session
-        $oauth_credentials = $request->session()->get('warlof.discord-connector.credentials');
+        $credentials = $request->session()->get('warlof.discord-connector.credentials');
 
         $request->session()->forget('warlof.discord-connector.credentials');
 
-        if (! $this->isValidCallback($oauth_credentials))
+        if (! $this->isValidCallback($credentials))
             return redirect()->route('home')
-                ->with('error', 'An error occurred while processing the request. For some reason, your session was not met system requirement.');
+                ->with('error', 'An error occurred while processing the request. ' .
+                    'For some reason, your session was not met system requirement.');
 
         // ensure request is legitimate
-        if ($oauth_credentials['state'] != $request->input('state')) {
+        if ($credentials['state'] != $request->input('state')) {
             return redirect()->back()
                 ->with('error', 'An error occurred while getting back the token. Returned state value is wrong. ' .
                     'In order to prevent any security issue, we stopped transaction.');
@@ -87,17 +88,18 @@ class OAuthController extends Controller
         // validating Discord credentials
         try {
 
-            $token = $this->exchangeToken($oauth_credentials['client_id'], $oauth_credentials['client_secret'], $request->input('code'));
+            $token = $this->exchangeToken($credentials['client_id'], $credentials['client_secret'],
+                $request->input('code'));
 
-            setting(['warlof.discord-connector.credentials.client_id', $oauth_credentials['client_id']], true);
-            setting(['warlof.discord-connector.credentials.client_secret', $oauth_credentials['client_secret']], true);
+            setting(['warlof.discord-connector.credentials.client_id', $credentials['client_id']], true);
+            setting(['warlof.discord-connector.credentials.client_secret', $credentials['client_secret']], true);
             setting(['warlof.discord-connector.credentials.token', [
                 'access'  => $token['access_token'],
                 'refresh' => $token['refresh_token'],
                 'expires' => carbon($token['request_date'])->addSeconds($token['expires_in'])->toDateTimeString(),
                 'scope'  => $token['scope'],
             ]], true);
-            setting(['warlof.discord-connector.credentials.bot_token', $oauth_credentials['bot_token']], true);
+            setting(['warlof.discord-connector.credentials.bot_token', $credentials['bot_token']], true);
             setting(['warlof.discord-connector.credentials.guild_id', $request->input('guild_id')], true);
 
             // update Discord container
