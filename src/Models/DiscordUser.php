@@ -26,6 +26,30 @@ use Seat\Web\Models\Group;
 /**
  * Class DiscordUser
  * @package Warlof\Seat\Connector\Discord\Models
+ *
+ * @SWG\Definition(
+ *     description="SeAT to Discord User mapping model",
+ *     title="Discord User model",
+ *     type="object"
+ * )
+ *
+ * @SWG\Property(
+ *     format="int",
+ *     description="ID",
+ *     property="group_id",
+ * )
+ *
+ * @SWG\Property(
+ *     format="int64",
+ *     description="Discord Unique ID",
+ *     property="discord_id",
+ * )
+ *
+ * @SWG\Property(
+ *     format="string",
+ *     description="Discord user nickname",
+ *     property="nick",
+ * )
  */
 class DiscordUser extends Model
 {

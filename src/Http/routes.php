@@ -20,11 +20,11 @@
 
 Route::group([
     'namespace' => 'Warlof\Seat\Connector\Discord\Http\Controllers\Api\v1',
-    'prefix' => 'discord-connector',
+    'prefix' => 'api',
     'middleware' => 'api.auth'
 ], function() {
-    Route::group(['prefix' => 'api'], function () {
-        Route::group(['prefix' => 'v1'], function () {
+    Route::group(['prefix' => 'v2'], function () {
+        Route::group(['prefix' => 'discord-connector'], function () {
                 Route::get('/mapping', 'DiscordApiController@getDiscordMappings');
         });
     });

@@ -31,13 +31,19 @@ use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 class DiscordApiController extends ApiController
 {
     /**
-     * SWG\Get(
-     *     path="/mappings",
-     *     tags={"discord-connector"},
+     * @SWG\Get(
+     *     path="/discord-connector/mapping",
+     *     tags={"Discord Connector"},
      *     summary="Get a list of users, group id, and discord nickname",
      *     description="Returns list of users along with their discord mapping",
      *     security={"ApiKeyAuth"},
-     *     @SWG\Response(response=200, description="Successful operation"),
+     *     @SWG\Response(response=200, description="Successful operation",
+     *          @SWG\Schema(
+     *              type="array",
+     *              @SWG\Items(ref="#/definitions/DiscordUser")
+     *          ),
+     *          examples={"application/json": {{"group_id":2, "discord_id":353886200135942144, "nick":"Warlof Tutsimo"}}}
+     *     ),
      *     @SWG\Response(response=400, description="Bad request"),
      *     @SWG\Response(response=401, description="Unauthorized"),
      *    )
@@ -58,4 +64,3 @@ class DiscordApiController extends ApiController
         );
     }
 }
-?>
