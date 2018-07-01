@@ -20,7 +20,8 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use RestCord\DiscordClient;
+use Illuminate\Support\Facades\Redis;
+use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 
 /**
  * Class MemberDispatcher
@@ -54,27 +55,43 @@ class MemberDispatcher extends DiscordJobBase
 
     /**
      * @throws \Seat\Services\Exceptions\SettingException
+     * @throws DiscordSettingException
      */
     public function handle()
     {
-        $members = app('discord')->guild->listGuildMembers([
-            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-            'limit'    => 1000,
-        ]);
+        if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
+            throw new DiscordSettingException();
 
-        foreach ($members as $member) {
+        if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
+            throw new DiscordSettingException();
 
-            // ignore any bot from the process
-            if ($member->user->bot)
-                continue;
+        Redis::funnel('seat-discord-connector:jobs.members_dispatcher')->limit(1)->then(function() {
 
-            $job = new MemberOrchestrator($member);
+            $members = app('discord')->guild->listGuildMembers([
+                'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+                'limit' => 1000,
+            ]);
 
-            if ($this->terminator)
-                $job->setTerminatorFlag();
+            foreach ($members as $member) {
 
-            dispatch($job);
+                // ignore any bot from the process
+                if ($member->user->bot)
+                    continue;
 
-        }
+                $job = new MemberOrchestrator($member);
+
+                if ($this->terminator)
+                    $job->setTerminatorFlag();
+
+                dispatch($job);
+
+            }
+
+        }, function() {
+
+            logger()->warning('A MemberDispatcher job is already running. Remove the job from the queue.');
+
+            $this->delete();
+        });
     }
 }

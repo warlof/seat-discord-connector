@@ -21,7 +21,6 @@
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
 use GuzzleHttp\Client;
-use RestCord\DiscordClient;
 use UnexpectedValueException;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Models\DiscordLog;

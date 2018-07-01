@@ -20,7 +20,7 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use RestCord\DiscordClient;
+use Illuminate\Support\Facades\Redis;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Models\DiscordRole;
 
@@ -48,29 +48,39 @@ class SyncRole extends DiscordJobBase
         if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
             throw new DiscordSettingException();
 
-        $discord_roles = app('discord')->guild->getGuildRoles([
-            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-        ]);
+        Redis::funnel('seat-discord-connector:jobs.sync_role')->limit(1)->then(function() {
 
-        $conversations_buffer = [];
+            $discord_roles = app('discord')->guild->getGuildRoles([
+                'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            ]);
 
-        foreach ($discord_roles as $role) {
+            $conversations_buffer = [];
 
-            // skip managed roles as we are not able to use them
-            if ($role->managed || $role->name == '@everyone')
-                continue;
+            foreach ($discord_roles as $role) {
 
-            $conversations_buffer[] = $role->id;
+                // skip managed roles as we are not able to use them
+                if ($role->managed || $role->name == '@everyone')
+                    continue;
 
-            DiscordRole::updateOrCreate([
+                $conversations_buffer[] = $role->id;
+
+                DiscordRole::updateOrCreate([
                     'id' => $role->id,
                 ], [
-                    'name'       => $role->name,
+                    'name' => $role->name,
                 ]);
 
-        }
+            }
 
-        DiscordRole::whereNotIn('id', $conversations_buffer)->delete();
+            DiscordRole::whereNotIn('id', $conversations_buffer)->delete();
+
+        }, function() {
+
+            logger()->warning('A SyncRole job is already running. Remove the job from the queue.');
+
+            $this->delete();
+
+        });
     }
 
 }

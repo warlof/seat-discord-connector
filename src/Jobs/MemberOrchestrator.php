@@ -20,7 +20,7 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use RestCord\DiscordClient;
+use Illuminate\Support\Facades\Redis;
 use RestCord\Model\Guild\GuildMember;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
@@ -46,6 +46,11 @@ class MemberOrchestrator extends DiscordJobBase
      * @var bool
      */
     private $terminator;
+
+    /**
+     * @var int
+     */
+    public $tries = 100;
 
     /**
      * ConversationOrchestrator constructor.
@@ -78,13 +83,23 @@ class MemberOrchestrator extends DiscordJobBase
         if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
             throw new DiscordSettingException();
 
-        // in case terminator flag has not been specified, proceed using user defined mapping
-        if (! $this->terminator) {
-            $this->processMappingBase();
-            return;
-        }
+        Redis::throttle('seat-discord-connector:jobs.member_orchestrator')->allow(20)->every(10)->then(function() {
 
-        $this->updateMemberRoles([]);
+            // in case terminator flag has not been specified, proceed using user defined mapping
+            if (! $this->terminator) {
+                $this->processMappingBase();
+                return;
+            }
+
+            $this->updateMemberRoles([]);
+
+        }, function() {
+
+            logger()->warning('A MemberOrchestrator job is already running. Delay job by 10 seconds.');
+
+            $this->release(10);
+
+        });
     }
 
     /**
