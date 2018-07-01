@@ -26,6 +26,7 @@ use RestCord\DiscordClient;
 use RestCord\Model\User\User;
 use Seat\Web\Http\Controllers\Controller;
 use UnexpectedValueException;
+use Warlof\Seat\Connector\Discord\Caches\RedisRateLimitProvider;
 use Warlof\Seat\Connector\Discord\Jobs\Invite;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 
@@ -154,7 +155,11 @@ class ServerController extends Controller
      */
     private function retrievingUserInformation(string $access_token)
     {
-        $driver = new DiscordClient(['token' => $access_token, 'tokenType' => 'OAuth']);
+        $driver = new DiscordClient([
+            'token' => $access_token,
+            'tokenType' => 'OAuth',
+            'rateLimitProvider' => new RedisRateLimitProvider(),
+        ]);
 
         return $driver->user->getCurrentUser([]);
     }

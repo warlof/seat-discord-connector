@@ -23,7 +23,9 @@ namespace Warlof\Seat\Connector\Discord\Http\Controllers\Services;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use RestCord\DiscordClient;
 use Seat\Web\Http\Controllers\Controller;
+use Warlof\Seat\Connector\Discord\Caches\RedisRateLimitProvider;
 use Warlof\Seat\Connector\Discord\Http\Validation\ValidateOAuth;
 
 /**
@@ -97,6 +99,15 @@ class OAuthController extends Controller
             ]], true);
             setting(['warlof.discord-connector.credentials.bot_token', $oauth_credentials['bot_token']], true);
             setting(['warlof.discord-connector.credentials.guild_id', $request->input('guild_id')], true);
+
+            // update Discord container
+            app()->singleton('discord', function () {
+                return new DiscordClient([
+                    'tokenType'         => 'Bot',
+                    'token'             => setting('warlof.discord-connector.credentials.bot_token', true),
+                    'rateLimitProvider' => new RedisRateLimitProvider(),
+                ]);
+            });
 
         } catch (Exception $e) {
             return redirect()->route('discord-connector.configuration')

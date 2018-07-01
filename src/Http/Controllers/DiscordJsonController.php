@@ -27,6 +27,7 @@ use Seat\Eveapi\Models\Corporation\CorporationTitle;
 use Seat\Web\Http\Controllers\Controller;
 use Seat\Web\Models\Acl\Role;
 use Seat\Web\Models\Group;
+use Warlof\Seat\Connector\Discord\Caches\RedisRateLimitProvider;
 use Warlof\Seat\Connector\Discord\Http\Validation\AddRelation;
 use Warlof\Seat\Connector\Discord\Http\Validation\DiscordUserShowModal;
 use Warlof\Seat\Connector\Discord\Models\DiscordRole;
@@ -60,6 +61,7 @@ class DiscordJsonController extends Controller
         $driver = new DiscordClient([
             'tokenType' => 'Bot',
             'token'     => setting('warlof.discord-connector.credentials.bot_token', true),
+            'rateLimitProvider' => new RedisRateLimitProvider(),
         ]);
 
         $guild_member = $driver->guild->getGuildMember([
