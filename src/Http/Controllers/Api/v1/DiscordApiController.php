@@ -51,7 +51,7 @@ class DiscordApiController extends ApiController
      *     @SWG\Response(response=400, description="Bad request"),
      *     @SWG\Response(response=401, description="Unauthorized"),
      *    )
-     * 
+     *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function getDiscordMappings()
