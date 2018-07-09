@@ -22,7 +22,7 @@
  * TODO: lazy coder, remember to edit this file before TAG ! DAMMIT !
  */
 return [
-    'version'   => '3.1.0',
+    'version'   => '3.1.1',
     'loggly'    => [
         'key' => 'b4aa3599-add7-4afc-aeb0-a9906b39f316',
         'tag' => 'discord-connector',
