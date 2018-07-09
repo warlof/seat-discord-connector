@@ -23,9 +23,9 @@ use Illuminate\Support\Facades\DB;
 use Seat\Services\Models\Schedule;
 
 /**
- * Class ScheduleSeederV230
+ * Class ScheduleSeederV310
  */
-class ScheduleSeederV230 extends Migration
+class ScheduleSeederV310 extends Migration
 {
     /**
      * @var array
@@ -33,7 +33,7 @@ class ScheduleSeederV230 extends Migration
     protected $schedule = [
         [
             'command'           => 'discord:user:policy',
-            'expression'        => '*,30 * * * *',
+            'expression'        => '0,30 * * * *',
             'allow_overlap'     => false,
             'allow_maintenance' => false,
             'ping_before'       => 'https://discordapp.com',
