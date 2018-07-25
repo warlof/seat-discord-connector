@@ -52,14 +52,6 @@ Don't forget to restart `supervisor` with `service supervisor restart` ;)
 > All upper command have to be run using the SeAT instance user `www-data`, `seat` or whatever you've done with your installation.
 > They need to be run at root SeAT directory which used to be `/var/www/seat`
 
-> **NOTE**
->
-> Due to a third party issue which has been fixed on development branch but not released yet,
-> you will have to lower the `minimum-stability` attribute from `composer.json` into your root
-> SeAT directory (used to be `/var/www/seat`) to `dev` instead `alpha`.
->
-> This will be fixed in initial release.
-
 ## Setup Package
 Authenticate yourself using admin user on your SeAT instance. If all upper statements have been executed properly, you'll seed a new section into the sidebar called `Discord Connector`.
 
