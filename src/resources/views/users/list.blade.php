@@ -48,14 +48,14 @@
         var modal = $('#user-channels');
         var table = $('table#users-table').DataTable({
             processing: true,
-            serverSide: true,
+            serverSide: false,
             ajax: '{{ route('discord-connector.json.users') }}',
             columns: [
-                {data: 'group_id'},
-                {data: 'user_id'},
-                {data: 'user_name'},
-                {data: 'discord_id'},
-                {data: 'discord_nick'},
+                {data: 'group_id', type: 'num'},
+                {data: 'user_id', type: 'num'},
+                {data: 'username', type: 'string'},
+                {data: 'discord_id', type: 'num'},
+                {data: 'nick', type: 'string'},
                 @if (auth()->user()->has('discord-connector.security'))
                 {
                     data: null,

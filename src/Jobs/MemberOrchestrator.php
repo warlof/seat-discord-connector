@@ -120,7 +120,6 @@ class MemberOrchestrator extends DiscordJobBase
      */
     private function processMappingBase()
     {
-        $roles = [];
         $nickname = null;
         $pending_drops = collect();
         $pending_adds = collect();
@@ -142,10 +141,10 @@ class MemberOrchestrator extends DiscordJobBase
                 if (! in_array($role_id, $this->member->roles))
                     $pending_adds->push($role_id);
             }
-        }
 
-        if ($pending_adds->count() > 0 || $pending_drops->count() > 0)
-            $this->updateMemberRoles($roles, $nickname);
+            if ($pending_adds->count() > 0 || $pending_drops->count() > 0)
+                $this->updateMemberRoles($roles, $nickname);
+        }
     }
 
     /**

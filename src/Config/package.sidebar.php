@@ -29,6 +29,7 @@ return [
                 'label' => 'discord-connector::seat.join',
                 'icon'  => 'fa-sign-in',
                 'route' => 'discord-connector.server.join',
+                'permission' => 'discord-connector.view',
             ],
             [
                 'name'  => 'Access Management',
@@ -60,6 +61,6 @@ return [
                 'permission' => 'discord-connector.security'
             ],
         ],
-        //'permission' => 'discord-connector.view'
+        'permission' => 'discord-connector.view'
     ],
 ];
