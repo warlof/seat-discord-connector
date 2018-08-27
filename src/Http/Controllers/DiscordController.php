@@ -72,24 +72,27 @@ class DiscordController extends Controller
         if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
             return Datatables::of(collect([]))->make(true);
 
-        $discord_users = DiscordUser::all();
+        $discord_users = DiscordUser::with('group')->get();
 
         return Datatables::of($discord_users)
-            ->addColumn('group_id', function($row){
+            ->editColumn('group_id', function($row){
                 return $row->group_id;
             })
             ->addColumn('user_id', function($row){
                 return $row->group->main_character_id;
             })
-            ->addColumn('user_name', function($row){
+            ->addColumn('username', function($row){
                 return optional($row->group->main_character)->name ?: 'Unknown Character';
             })
             ->editColumn('discord_id', function($row){
                 return (string) $row->discord_id;
             })
-            ->addColumn('discord_nick', function($row){
+            ->editColumn('nick', function($row){
                 return $row->nick;
             })
+            ->removeColumn('refresh_token')
+            ->removeColumn('access_token')
+            ->removeColumn('expires_at')
             ->make(true);
     }
 

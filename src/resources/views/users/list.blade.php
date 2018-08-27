@@ -53,9 +53,9 @@
             columns: [
                 {data: 'group_id'},
                 {data: 'user_id'},
-                {data: 'user_name'},
+                {data: 'username', name: 'group.main_character.name'},
                 {data: 'discord_id'},
-                {data: 'discord_nick'},
+                {data: 'nick'},
                 @if (auth()->user()->has('discord-connector.security'))
                 {
                     data: null,
