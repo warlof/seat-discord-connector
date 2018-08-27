@@ -39,29 +39,35 @@ Route::group([
         'middleware' => ['web', 'auth'],
     ], function() {
 
-        Route::get('/server/join', [
-            'as' => 'discord-connector.server.join',
-            'uses' => 'Services\ServerController@join',
-        ]);
+        Route::group([
+            'middleware' => 'bouncer:discord-connector.view',
+        ], function () {
 
-        Route::get('/server/callback', [
-            'as' => 'discord-connector.server.callback',
-            'uses' => 'Services\ServerController@callback'
-        ]);
+            Route::get('/server/join', [
+                'as' => 'discord-connector.server.join',
+                'uses' => 'Services\ServerController@join',
+            ]);
+
+            Route::get('/server/callback', [
+                'as' => 'discord-connector.server.callback',
+                'uses' => 'Services\ServerController@callback',
+            ]);
+
+        });
 
         // Endpoints with Configuration Permission
         Route::group([
-            'middleware' => 'bouncer:discord-connector.setup'
+            'middleware' => 'bouncer:discord-connector.setup',
         ], function() {
 
             Route::get('/configuration', [
                 'as' => 'discord-connector.configuration',
-                'uses' => 'DiscordSettingsController@getConfiguration'
+                'uses' => 'DiscordSettingsController@getConfiguration',
             ]);
 
             Route::get('/run/{commandName}', [
                 'as' => 'discord-connector.command.run',
-                'uses' => 'DiscordSettingsController@getSubmitJob'
+                'uses' => 'DiscordSettingsController@getSubmitJob',
             ]);
 
             // OAuth
@@ -72,12 +78,12 @@ Route::group([
 
                 Route::post('/configuration', [
                     'as' => 'discord-connector.oauth.configuration.post',
-                    'uses' => 'OAuthController@postConfiguration'
+                    'uses' => 'OAuthController@postConfiguration',
                 ]);
 
                 Route::get('/callback', [
                     'as' => 'discord-connector.oauth.callback',
-                    'uses' => 'OAuthController@callback'
+                    'uses' => 'OAuthController@callback',
                 ]);
 
             });
@@ -85,106 +91,97 @@ Route::group([
         });
 
         Route::group([
-            'middleware' => 'bouncer:discord-connector.create'
+            'middleware' => 'bouncer:discord-connector.create',
         ], function() {
 
             Route::get('/public/{channel_id}/remove', [
                 'as' => 'discord-connector.public.remove',
                 'uses' => 'DiscordJsonController@getRemovePublic',
-                'middleware' => 'bouncer:discord-connector.create'
             ]);
 
             Route::get('/users/{group_id}/{channel_id}/remove', [
                 'as' => 'discord-connector.user.remove',
                 'uses' => 'DiscordJsonController@getRemoveUser',
-                'middleware' => 'bouncer:discord-connector.create'
             ]);
 
             Route::get('/roles/{role_id}/{channel_id}/remove', [
                 'as' => 'discord-connector.role.remove',
                 'uses' => 'DiscordJsonController@getRemoveRole',
-                'middleware' => 'bouncer:discord-connector.create'
             ]);
 
             Route::get('/corporations/{corporation_id}/{channel_id}/remove', [
                 'as' => 'discord-connector.corporation.remove',
                 'uses' => 'DiscordJsonController@getRemoveCorporation',
-                'middleware' => 'bouncer:discord-connector.create'
             ]);
 
             Route::get('/corporation/{corporation_id}/{title_id}/{channel_id}/remove', [
                 'as' => 'discord-connector.title.remove',
                 'uses' => 'DiscordJsonController@getRemoveTitle',
-                'middleware' => 'bouncer:discord-connector:create'
             ]);
 
             Route::get('/alliances/{alliance_id}/{channel_id}/remove', [
                 'as' => 'discord-connector.alliance.remove',
                 'uses' => 'DiscordJsonController@getRemoveAlliance',
-                'middleware' => 'bouncer:discord-connector.create'
             ]);
 
             Route::post('/', [
                 'as' => 'discord-connector.add',
                 'uses' => 'DiscordJsonController@postRelation',
-                'middleware' => 'bouncer:discord-connector.create'
             ]);
 
         });
 
-        Route::get('/', [
-            'as' => 'discord-connector.list',
-            'uses' => 'DiscordJsonController@getRelations',
-            'middleware' => 'bouncer:discord-connector.view'
-        ]);
-
-        Route::get('/logs', [
-            'as' => 'discord-connector.logs',
-            'uses' => 'DiscordLogsController@getLogs',
-            'middleware' => 'bouncer:discord-connector.security'
-        ]);
-
-        Route::get('/users', [
-            'as' => 'discord-connector.users',
-            'uses' => 'DiscordController@getUsers',
-            'middleware' => 'bouncer:discord-connector.view'
-        ]);
-
         Route::group([
-            'prefix' => 'json'
+            'middleware' => 'bouncer:discord-connector.security',
         ], function() {
 
+            Route::get('/', [
+                'as' => 'discord-connector.list',
+                'uses' => 'DiscordJsonController@getRelations',
+            ]);
+
             Route::get('/logs', [
-                'as' => 'discord-connector.json.logs',
-                'uses' => 'DiscordLogsController@getJsonLogData',
-                'middleware' => 'bouncer:discord-connector.security'
+                'as' => 'discord-connector.logs',
+                'uses' => 'DiscordLogsController@getLogs',
             ]);
 
             Route::get('/users', [
-                'as' => 'discord-connector.json.users',
-                'uses' => 'DiscordController@getUsersData',
-                'middleware' => 'bouncer:discord-connector.view'
+                'as' => 'discord-connector.users',
+                'uses' => 'DiscordController@getUsers',
             ]);
 
-            Route::post('/user/remove', [
-                'as' => 'discord-connector.json.user.remove',
-                'uses' => 'DiscordController@postRemoveUserMapping',
-                'middleware' => 'bouncer:discord-connector.security'
-            ]);
+            Route::group([
+                'prefix' => 'json',
+            ], function () {
 
-            Route::get('/users/channels', [
-                'as' => 'discord-connector.json.user.roles',
-                'uses' => 'DiscordJsonController@getJsonUserRolesData',
-                'middleware' => 'bouncer:discord-connector.security'
-            ]);
+                Route::get('/logs', [
+                    'as' => 'discord-connector.json.logs',
+                    'uses' => 'DiscordLogsController@getJsonLogData',
+                ]);
 
-            Route::get('/titles', [
-                'as' => 'discord-connector.json.titles',
-                'uses' => 'DiscordJsonController@getJsonTitle',
-                'middleware' => 'bouncer:discord-connector.create'
-            ]);
+                Route::get('/users', [
+                    'as' => 'discord-connector.json.users',
+                    'uses' => 'DiscordController@getUsersData',
+                ]);
 
+                Route::post('/user/remove', [
+                    'as' => 'discord-connector.json.user.remove',
+                    'uses' => 'DiscordController@postRemoveUserMapping',
+                ]);
+
+                Route::get('/users/channels', [
+                    'as' => 'discord-connector.json.user.roles',
+                    'uses' => 'DiscordJsonController@getJsonUserRolesData',
+                ]);
+
+            });
         });
+
+        Route::get('/titles', [
+            'as' => 'discord-connector.json.titles',
+            'uses' => 'DiscordJsonController@getJsonTitle',
+            'middleware' => 'bouncer:discord-connector.create',
+        ]);
 
     });
 
