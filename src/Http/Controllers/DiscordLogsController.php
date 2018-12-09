@@ -49,6 +49,7 @@ class DiscordLogsController extends Controller
             ->editColumn('created_at', function($row){
                 return view('discord-connector::logs.partial.date', compact('row'));
             })
+            ->rawColumns(['created_at'])
             ->make(true);
     }
 }
