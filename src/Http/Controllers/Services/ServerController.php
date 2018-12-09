@@ -93,7 +93,7 @@ class ServerController extends Controller
         }
 
         return redirect()->route('home')
-            ->with('success', 'Your account has been bind to SeAT. You will get your invitation shortly.');
+            ->with('success', 'Your account has been bound to SeAT. You will get your invitation shortly.');
     }
 
     /**
