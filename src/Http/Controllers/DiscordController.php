@@ -22,7 +22,6 @@ namespace Warlof\Seat\Connector\Discord\Http\Controllers;
 
 use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
-use Yajra\Datatables\Facades\Datatables;
 
 /**
  * Class DiscordController
@@ -70,11 +69,11 @@ class DiscordController extends Controller
     public function getUsersData()
     {
         if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
-            return Datatables::of(collect([]))->make(true);
+            return app('DataTables')::of(collect([]))->make(true);
 
         $discord_users = DiscordUser::with('group')->get();
 
-        return Datatables::of($discord_users)
+        return app('DataTables')::of($discord_users)
             ->editColumn('group_id', function($row){
                 return $row->group_id;
             })

@@ -22,7 +22,6 @@ namespace Warlof\Seat\Connector\Discord\Http\Controllers;
 
 use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Models\DiscordLog;
-use Yajra\Datatables\Facades\Datatables;
 
 /**
  * Class DiscordLogsController
@@ -46,7 +45,7 @@ class DiscordLogsController extends Controller
     {
         $logs = DiscordLog::orderBy('created_at', 'desc')->get();
 
-        return Datatables::of($logs)
+        return app('DataTables')::of($logs)
             ->editColumn('created_at', function($row){
                 return view('discord-connector::logs.partial.date', compact('row'));
             })
