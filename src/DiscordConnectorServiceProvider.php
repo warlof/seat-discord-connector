@@ -20,8 +20,8 @@
 
 namespace Warlof\Seat\Connector\Discord;
 
-use Illuminate\Support\ServiceProvider;
 use RestCord\DiscordClient;
+use Seat\Services\AbstractSeatPlugin;
 use Warlof\Seat\Connector\Discord\Caches\RedisRateLimitProvider;
 use Warlof\Seat\Connector\Discord\Commands\DiscordLogsClear;
 use Warlof\Seat\Connector\Discord\Commands\DiscordRoleSync;
@@ -32,7 +32,7 @@ use Warlof\Seat\Connector\Discord\Commands\DiscordUserTerminator;
  * Class DiscordConnectorServiceProvider
  * @package Warlof\Seat\Connector\Discord
  */
-class DiscordConnectorServiceProvider extends ServiceProvider
+class DiscordConnectorServiceProvider extends AbstractSeatPlugin
 {
     /**
      * Bootstrap the application services.
@@ -44,6 +44,7 @@ class DiscordConnectorServiceProvider extends ServiceProvider
         $this->addCommands();
         $this->addRoutes();
         $this->addViews();
+        $this->addMigrations();
         $this->addPublications();
         $this->addTranslations();
 
@@ -82,6 +83,14 @@ class DiscordConnectorServiceProvider extends ServiceProvider
     }
 
     /**
+     * Import migrations
+     */
+    private function addMigrations()
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations/');
+    }
+
+    /**
      * Import translations
      */
     private function addTranslations()
@@ -113,7 +122,6 @@ class DiscordConnectorServiceProvider extends ServiceProvider
     private function addPublications()
     {
         $this->publishes([
-            __DIR__ . '/database/migrations/' => database_path('migrations'),
             __DIR__ . '/resources/assets/css/' => public_path('web/css'),
         ]);
     }
@@ -151,5 +159,63 @@ class DiscordConnectorServiceProvider extends ServiceProvider
                 __DIR__ . '/Http/Controllers/Api/v1',
             ])),
         ]);
+    }
+
+    /**
+     * Return the plugin public name as it should be displayed into settings.
+     *
+     * @example SeAT Web
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return 'Discord Connector';
+    }
+
+    /**
+     * Return the plugin repository address.
+     *
+     * @example https://github.com/eveseat/web
+     *
+     * @return string
+     */
+    public function getPackageRepositoryUrl(): string
+    {
+        return 'https://github.com/warlof/seat-discord-connector';
+    }
+
+    /**
+     * Return the plugin technical name as published on package manager.
+     *
+     * @example web
+     *
+     * @return string
+     */
+    public function getPackagistPackageName(): string
+    {
+        return 'seat-discord-connector';
+    }
+
+    /**
+     * Return the plugin vendor tag as published on package manager.
+     *
+     * @example eveseat
+     *
+     * @return string
+     */
+    public function getPackagistVendorName(): string
+    {
+        return 'warlof';
+    }
+
+    /**
+     * Return the plugin installed version.
+     *
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        return config('discord-connector.config.version');
     }
 }
