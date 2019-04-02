@@ -46,7 +46,7 @@ class DiscordUserTerminator extends Command
     public function handle()
     {
         // queue the job and inform user
-        dispatch(new MemberDispatcher(true));
+        dispatch(new MemberDispatcher(true))->onQueue('high');
 
         $this->info('A synchronization job has been queued in order to update discord/seat user relation.');
     }

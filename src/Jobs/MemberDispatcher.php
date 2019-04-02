@@ -83,7 +83,7 @@ class MemberDispatcher extends DiscordJobBase
                 if ($this->terminator)
                     $job->setTerminatorFlag();
 
-                dispatch($job);
+                dispatch($job)->onQueue('high');
 
             }
 
