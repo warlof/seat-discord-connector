@@ -45,7 +45,7 @@ class DiscordUserPolicy extends Command
      */
     public function handle()
     {
-        MemberDispatcher::dispatch();
+        MemberDispatcher::dispatch()->onQueue('high');
         $this->info('A job has been queued in order to invite and kick user from granted roles.');
     }
 
