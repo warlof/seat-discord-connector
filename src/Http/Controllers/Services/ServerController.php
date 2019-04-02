@@ -185,7 +185,7 @@ class ServerController extends Controller
             'expires_at'    => $credentials['expires_at'],
         ]);
 
-        dispatch(new Invite($discord_user));
+        dispatch(new Invite($discord_user))->onQueue('high');
     }
 
 }
