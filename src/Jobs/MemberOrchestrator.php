@@ -128,11 +128,11 @@ class MemberOrchestrator extends DiscordJobBase
         $discord_user = DiscordUser::where('discord_id', $this->member->user->id)->first();
 
         if (! is_null($discord_user)) {
-            if (! is_null($discord_user->group->main_character)){
+            if (! is_null($discord_user->group->main_character)) {
                 $ticker = $discord_user->group->main_character->corporation->ticker;
                 $mainname = $discord_user->group->main_character->name;
                 $nickname = "[".$ticker."] ".$mainname;
-                if ($this->member->nick != $nickname && ! is_null($nickname))
+                if ($this->member->nick != $nickname)
                     $nickname_diff = true;
             }
             foreach ($this->member->roles as $role_id) {
@@ -147,8 +147,9 @@ class MemberOrchestrator extends DiscordJobBase
                     $pending_adds->push($role_id);
             }
 
-            if ($pending_adds->count() > 0 || $pending_drops->count() > 0 || $nickname_diff)
+            if ($pending_adds->count() > 0 || $pending_drops->count() > 0) {
                 $this->updateMemberRoles($roles, $nickname);
+            }
         }
     }
 
@@ -167,7 +168,7 @@ class MemberOrchestrator extends DiscordJobBase
             'roles'    => $roles,
         ];
 
-        if ($this->member->nick != $nickname && ! is_null($nickname))
+        if (/* $this->member->nick != $nickname && */ ! is_null($nickname))
             array_merge($options, [
                 'nick' => $nickname
             ]);
