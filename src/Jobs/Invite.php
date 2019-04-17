@@ -88,7 +88,7 @@ class Invite extends DiscordJobBase
      */
     private function inviteUserIntoGuild()
     {
-        $ticker = "[".optional($this->$discord_user->group->main_character)->corporation->ticker."]";
+        $ticker = "[".optional($this->discord_user->group->main_character)->corporation->ticker."]";
         $new_nickname = optional($this->discord_user->group->main_character)->name;
 
         $user = app('discord')->guild->addGuildMember([
