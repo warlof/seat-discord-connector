@@ -123,13 +123,18 @@ class MemberOrchestrator extends DiscordJobBase
         $nickname = null;
         $pending_drops = collect();
         $pending_adds = collect();
+        $nickname_diff = false;
 
         $discord_user = DiscordUser::where('discord_id', $this->member->user->id)->first();
 
         if (! is_null($discord_user)) {
-            if (! is_null($discord_user->group->main_character))
-                $nickname = $discord_user->group->main_character->name;
-
+            if (! is_null($discord_user->group->main_character)){
+                $ticker = $discord_user->group->main_character->corporation->ticker;
+                $mainname = $discord_user->group->main_character->name;
+                $nickname = "[".$ticker."] ".$mainname;
+                if ($this->member->nick != $nickname && ! is_null($nickname))
+                    $nickname_diff = true;
+            }
             foreach ($this->member->roles as $role_id) {
                 if (! Helper::isAllowedRole($role_id, $discord_user))
                     $pending_drops->push($role_id);
@@ -142,7 +147,7 @@ class MemberOrchestrator extends DiscordJobBase
                     $pending_adds->push($role_id);
             }
 
-            if ($pending_adds->count() > 0 || $pending_drops->count() > 0)
+            if ($pending_adds->count() > 0 || $pending_drops->count() > 0 || $nickname_diff)
                 $this->updateMemberRoles($roles, $nickname);
         }
     }

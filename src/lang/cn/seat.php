@@ -28,6 +28,6 @@ return [
     'title_filter' => '按游戏内头衔',
     'alliance_filter' => '按联盟',
     'public_filter' => '所有人',
-    'discord_role' => 'Discord角色',
-    'join'      => '获取discord权限',
+    'discord_role' => 'Discord 角色',
+    'join'      => '加入 Discord 服务器',
 ];
