@@ -93,7 +93,7 @@ class Invite extends DiscordJobBase
         $ticker = "[".$corp->ticker."]";
         $new_nickname = $this->discord_user->group->main_character->name;
 
-        $roles = Helper::allowedRoles($discord_user);
+        $roles = Helper::allowedRoles($this->discord_user);
 
         $user = app('discord')->guild->addGuildMember([
             'user.id'      => $this->discord_user->discord_id,
