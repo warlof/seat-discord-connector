@@ -25,6 +25,7 @@ use RestCord\Model\Guild\GuildMember;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
+use Seat\Eveapi\Models\Corporation\CorporationInfo;
 
 /**
  * Class MemberOrchestrator
@@ -129,8 +130,9 @@ class MemberOrchestrator extends DiscordJobBase
 
         if (! is_null($discord_user)) {
             if (! is_null($discord_user->group->main_character)) {
-                $corp = $discord_user->group->main_character->corporation();
-                $ticker = $discord_user->group->main_character->corporation->ticker;
+                $corp_id = $discord_user->group->main_character->corporation()->corporation_id;
+                $corp = CorporationInfo::where('corporation_id', $corp_id)->first();
+                $ticker = $corp->ticker;
                 $mainname = $discord_user->group->main_character->name;
                 $nickname = "[".$ticker."] ".$mainname;
                 if ($this->member->nick != $nickname)

@@ -26,6 +26,7 @@ use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
 use Warlof\Seat\Connector\Discord\Models\DiscordLog;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
+use Seat\Eveapi\Models\Corporation\CorporationInfo;
 
 /**
  * Class Invite
@@ -94,7 +95,8 @@ class Invite extends DiscordJobBase
             'user.id' => $this->discord_user->discord_id,
         ]);
 
-        $corp = $this->discord_user->group->main_character->corporation();
+        $corp_id = $this->discord_user->group->main_character->corporation()->corporation_id;
+        $corp = CorporationInfo::where('corporation_id', $corp_id)->first();
         $ticker = "[".$corp->ticker."]";
         $new_nickname = $this->discord_user->group->main_character->name;
 
