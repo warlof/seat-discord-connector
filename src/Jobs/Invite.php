@@ -89,25 +89,42 @@ class Invite extends DiscordJobBase
      */
     private function inviteUserIntoGuild()
     {
+        $guild_member = app('discord')->guild->getGuildMember([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            'user.id' => $this->discord_user->discord_id,
+        ]);
+
         $corp = $this->discord_user->group->main_character->corporation();
         $ticker = "[".$corp->ticker."]";
         $new_nickname = $this->discord_user->group->main_character->name;
 
         $roles = Helper::allowedRoles($this->discord_user);
 
-        $user = app('discord')->guild->addGuildMember([
-            'user.id'      => $this->discord_user->discord_id,
-            'guild.id'     => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-            'nick'         =>$ticker." ".$new_nickname,
-            'access_token' => $this->getAccessToken(),
-            'roles'        => $roles,
-        ]);
+        if (isset($guild_member)) {
+            app('discord')->guild->modifyGuildMember([
+                'user.id'      => $this->discord_user->discord_id,
+                'guild.id'     => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+                'nick'         => $ticker." ".$new_nickname,
+                'roles'        => $roles,
+            ]);
 
+            if (property_exists($guild_member, 'nick') && ! is_null($guild_member->nick)) {
+                $this->discord_user->nick = $guild_member->nick;
+                $this->discord_user->save();
+            }
+        } else {
+            $user = app('discord')->guild->addGuildMember([
+                'user.id'      => $this->discord_user->discord_id,
+                'guild.id'     => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+                'nick'         => $ticker." ".$new_nickname,
+                'access_token' => $this->getAccessToken(),
+                'roles'        => $roles,
+            ]);
 
-
-        if (property_exists($user, 'nick') && ! is_null($user->nick)) {
-            $this->discord_user->nick = $user->nick;
-            $this->discord_user->save();
+            if (property_exists($user, 'nick') && ! is_null($user->nick)) {
+                $this->discord_user->nick = $user->nick;
+                $this->discord_user->save();
+            }
         }
     }
 
