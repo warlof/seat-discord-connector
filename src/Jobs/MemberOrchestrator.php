@@ -129,6 +129,7 @@ class MemberOrchestrator extends DiscordJobBase
 
         if (! is_null($discord_user)) {
             if (! is_null($discord_user->group->main_character)) {
+                $corp = $discord_user->group->main_character->corporation();
                 $ticker = $discord_user->group->main_character->corporation->ticker;
                 $mainname = $discord_user->group->main_character->name;
                 $nickname = "[".$ticker."] ".$mainname;
@@ -147,8 +148,10 @@ class MemberOrchestrator extends DiscordJobBase
                     $pending_adds->push($role_id);
             }
 
-            if ($pending_adds->count() > 0 || $pending_drops->count() > 0) {
-                $this->updateMemberRoles($roles, $nickname);
+            $update_role = $pending_adds->count() > 0 || $pending_drops->count() > 0;
+
+            if ($update_role || $nickname_diff) {
+                $this->updateMemberRoles($update_role ? $roles : null, $nickname_diff ? $nickname : null);
             }
         }
     }
@@ -156,21 +159,25 @@ class MemberOrchestrator extends DiscordJobBase
     /**
      * Update Discord user with new role mapping and nickname if required
      *
-     * @param array $roles
+     * @param array|null $roles
      * @param string|null $nickname
      * @throws \Seat\Services\Exceptions\SettingException
      */
-    private function updateMemberRoles(array $roles, string $nickname = null)
+    private function updateMemberRoles(array $roles = null, string $nickname = null)
     {
         $options = [
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
             'user.id'  => $this->member->user->id,
-            'roles'    => $roles,
         ];
 
-        if (/* $this->member->nick != $nickname && */ ! is_null($nickname))
+        if (! is_null($roles)) 
             array_merge($options, [
-                'nick' => $nickname
+                'roles' => $roles,
+            ]);
+
+        if (! is_null($nickname))
+            array_merge($options, [
+                'nick' => $nickname,
             ]);
 
         app('discord')->guild->modifyGuildMember($options);
