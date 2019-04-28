@@ -20,7 +20,7 @@
 
 return [
     'discord-connector' => [
-        'name'          => 'Discord Connector',
+        'name'          => 'Discord',
         'icon'          => 'fa-plug',
         'route_segment' => 'discord-connector',
         'entries' => [
