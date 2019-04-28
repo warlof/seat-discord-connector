@@ -90,10 +90,6 @@ class Invite extends DiscordJobBase
      */
     private function inviteUserIntoGuild()
     {
-        $guild_member = app('discord')->guild->getGuildMember([
-            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-            'user.id' => $this->discord_user->discord_id,
-        ]);
 
         $corp_id = $this->discord_user->group->main_character->corporation()->corporation_id;
         $corp = CorporationInfo::where('corporation_id', $corp_id)->first();
@@ -101,6 +97,11 @@ class Invite extends DiscordJobBase
         $new_nickname = $this->discord_user->group->main_character->name;
 
         $roles = Helper::allowedRoles($this->discord_user);
+
+        $guild_member = app('discord')->guild->getGuildMember([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            'user.id' => $this->discord_user->discord_id,
+        ]);
 
         if (isset($guild_member)) {
             app('discord')->guild->modifyGuildMember([
