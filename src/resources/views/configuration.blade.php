@@ -84,6 +84,18 @@
                             </span>
                         </div>
                     </div>
+
+                    <legend>Options</legend>
+
+                    <div class="form-group">
+                        <label for="discord-configuration-ticker" class="col-md-4">Display Ticker</label>
+                        <div class="col-md-7">
+                            <div class="input-group input-group-sm">
+                                <input type="checkbox" id="discord-configuration-ticker"
+                                       name="discord-configuration-ticker" @if(setting('warlof.discord-connector.ticker', true)) checked="checked" @endif />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="box-footer">

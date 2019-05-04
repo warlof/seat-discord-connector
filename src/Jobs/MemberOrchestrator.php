@@ -131,10 +131,12 @@ class MemberOrchestrator extends DiscordJobBase
             return;
 
         if (! is_null($discord_user->group->main_character)) {
-            $corporation = $discord_user->group->main_character->corporation;
+            $corporation = CorporationInfo::find($discord_user->group->main_character->corporation_id);
             $main_name = $discord_user->group->main_character->name;
+            $expected_nickname = $main_name;
 
-            $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $main_name);
+            if (setting('warlof.discord-connector.ticker', true))
+                $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $main_name);
 
             if ($this->member->nick != $expected_nickname)
                 $new_nickname = $expected_nickname;

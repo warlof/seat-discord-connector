@@ -68,6 +68,8 @@ class OAuthController extends Controller
             'bot_token'     => $request->input('discord-configuration-bot'),
         ]]);
 
+        setting(['warlof.discord-connector.ticker', $request->input('discord-configuration-ticker')], true);
+
         return redirect($this->oAuthAuthorization($request->input('discord-configuration-client'), $state));
     }
 
