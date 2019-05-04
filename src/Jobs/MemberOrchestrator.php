@@ -121,40 +121,41 @@ class MemberOrchestrator extends DiscordJobBase
      */
     private function processMappingBase()
     {
-        $nickname = null;
+        $new_nickname = null;
         $pending_drops = collect();
         $pending_adds = collect();
-        $nickname_diff = false;
 
         $discord_user = DiscordUser::where('discord_id', $this->member->user->id)->first();
 
-        if (! is_null($discord_user)) {
-            if (! is_null($discord_user->group->main_character)) {
-                $corp_id = $discord_user->group->main_character->corporation()->corporation_id;
-                $corp = CorporationInfo::where('corporation_id', $corp_id)->first();
-                $ticker = $corp->ticker;
-                $mainname = $discord_user->group->main_character->name;
-                $nickname = "[".$ticker."] ".$mainname;
-                if ($this->member->nick != $nickname)
-                    $nickname_diff = true;
-            }
-            foreach ($this->member->roles as $role_id) {
-                if (! Helper::isAllowedRole($role_id, $discord_user))
-                    $pending_drops->push($role_id);
-            }
+        if (is_null($discord_user))
+            return;
 
-            $roles = Helper::allowedRoles($discord_user);
+        if (! is_null($discord_user->group->main_character)) {
+            $corporation = $discord_user->group->main_character->corporation;
+            $main_name = $discord_user->group->main_character->name;
 
-            foreach ($roles as $role_id) {
-                if (! in_array($role_id, $this->member->roles))
-                    $pending_adds->push($role_id);
-            }
+            $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $main_name);
 
-            $update_role = $pending_adds->count() > 0 || $pending_drops->count() > 0;
+            if ($this->member->nick != $expected_nickname)
+                $new_nickname = $expected_nickname;
+        }
 
-            if ($update_role || $nickname_diff) {
-                $this->updateMemberRoles($update_role ? $roles : null, $nickname_diff ? $nickname : null);
-            }
+        foreach ($this->member->roles as $role_id) {
+            if (! Helper::isAllowedRole($role_id, $discord_user))
+                $pending_drops->push($role_id);
+        }
+
+        $roles = Helper::allowedRoles($discord_user);
+
+        foreach ($roles as $role_id) {
+            if (! in_array($role_id, $this->member->roles))
+                $pending_adds->push($role_id);
+        }
+
+        $is_roles_outdated = $pending_adds->count() > 0 || $pending_drops->count() > 0;
+
+        if ($is_roles_outdated || ! is_null($new_nickname)) {
+            $this->updateMemberRoles($is_roles_outdated ? $roles : null, $new_nickname);
         }
     }
 
@@ -168,11 +169,11 @@ class MemberOrchestrator extends DiscordJobBase
     private function updateMemberRoles(array $roles = null, string $nickname = null)
     {
         $options = [
-            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            'guild.id' => setting('warlof.discord-connector.credentials.guild_id', true),
             'user.id'  => $this->member->user->id,
         ];
 
-        if (! is_null($roles)) 
+        if (! is_null($roles))
             array_merge($options, [
                 'roles' => $roles,
             ]);

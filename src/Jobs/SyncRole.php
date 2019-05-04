@@ -51,7 +51,7 @@ class SyncRole extends DiscordJobBase
         Redis::funnel('seat-discord-connector:jobs.sync_role')->limit(1)->then(function() {
 
             $discord_roles = app('discord')->guild->getGuildRoles([
-                'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+                'guild.id' => setting('warlof.discord-connector.credentials.guild_id', true),
             ]);
 
             $conversations_buffer = [];
