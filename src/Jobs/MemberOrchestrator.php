@@ -169,7 +169,7 @@ class MemberOrchestrator extends DiscordJobBase
     private function updateMemberRoles(array $roles = null, string $nickname = null)
     {
         $options = [
-            'guild.id' => setting('warlof.discord-connector.credentials.guild_id', true),
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
             'user.id'  => $this->member->user->id,
         ];
 
