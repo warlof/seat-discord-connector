@@ -85,13 +85,13 @@ class OAuthController extends Controller
         $request->session()->forget('warlof.discord-connector.credentials');
 
         if (! $this->isValidCallback($credentials))
-            return redirect()->route('home')
+            return redirect()->route('discord-connector.configuration')
                 ->with('error', 'An error occurred while processing the request. ' .
                     'For some reason, your session was not met system requirement.');
 
         // ensure request is legitimate
         if ($credentials['state'] != $request->input('state')) {
-            return redirect()->back()
+            return redirect()->route('discord-connector.configuration')
                 ->with('error', 'An error occurred while getting back the token. Returned state value is wrong. ' .
                     'In order to prevent any security issue, we stopped transaction.');
         }
