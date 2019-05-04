@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use RestCord\DiscordClient;
 use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Caches\RedisRateLimitProvider;
+use Warlof\Seat\Connector\Discord\Helpers\Helper;
 use Warlof\Seat\Connector\Discord\Http\Validation\ValidateOAuth;
 
 /**
@@ -39,6 +40,15 @@ class OAuthController extends Controller
      */
     const SCOPES = [
         'bot', 'guilds.join',
+    ];
+
+    const BOT_PERMISSIONS = [
+        'MANAGE_ROLES'          => 0x10000000,
+        'KICK_MEMBERS'          => 0x00000002,
+        'BAN_MEMBERS'           => 0x00000004,
+        'CREATE_INSTANT_INVITE' => 0x00000001,
+        'CHANGE_NICKNAME'       => 0x04000000,
+        'MANAGE_NICKNAMES'      => 0x08000000,
     ];
 
     /**
@@ -132,10 +142,12 @@ class OAuthController extends Controller
     {
         $base_uri = 'https://discordapp.com/api/oauth2/authorize?';
 
+        $permissions = Helper::arrayBitwiseOr(self::BOT_PERMISSIONS);
+
         return $base_uri . http_build_query([
             'response_type' => 'code',
             'client_id'     => $client_id,
-            'permissions'   => 469762055,
+            'permissions'   => $permissions,
             'scope'         => implode(' ', self::SCOPES),
             'state'         => $state,
             'redirect_uri'  => route('discord-connector.oauth.callback'),

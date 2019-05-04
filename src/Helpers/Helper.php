@@ -127,4 +127,20 @@ class Helper
     {
         return in_array($role_id, self::allowedRoles($discord_user));
     }
+
+    /**
+     * Determine the value based on a list of masks by applying bitwise OR
+     *
+     * @param array $masks
+     * @return int
+     */
+    public static function arrayBitwiseOr(array $masks): int
+    {
+        $value = 0;
+
+        foreach ($masks as $mask)
+            $value |= $mask;
+
+        return $value;
+    }
 }
