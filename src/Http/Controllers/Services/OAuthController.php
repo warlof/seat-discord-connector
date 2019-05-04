@@ -80,6 +80,7 @@ class OAuthController extends Controller
     {
         // get back pending OAuth credentials validation from session
         $credentials = $request->session()->get('warlof.discord-connector.credentials');
+        $expected_permissions = Helper::arrayBitwiseOr(self::BOT_PERMISSIONS);
 
         $request->session()->forget('warlof.discord-connector.credentials');
 
@@ -94,6 +95,12 @@ class OAuthController extends Controller
                 ->with('error', 'An error occurred while getting back the token. Returned state value is wrong. ' .
                     'In order to prevent any security issue, we stopped transaction.');
         }
+
+        if ($expected_permissions != intval($request->input('permissions')))
+            return redirect()->route('discord-connector.configuration')
+                ->with('error',
+                    sprintf('An error occurred while getting back permissions. Returned permissions (%s) does not match ' .
+                        'with requested permissions (%s)', $request->input('permissions'), $expected_permissions));
 
         // validating Discord credentials
         try {
