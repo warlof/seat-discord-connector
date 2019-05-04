@@ -174,14 +174,10 @@ class MemberOrchestrator extends DiscordJobBase
         ];
 
         if (! is_null($roles))
-            array_merge($options, [
-                'roles' => $roles,
-            ]);
+            $options['roles'] = $roles;
 
         if (! is_null($nickname))
-            array_merge($options, [
-                'nick' => $nickname,
-            ]);
+            $options['nick'] = $nickname;
 
         app('discord')->guild->modifyGuildMember($options);
     }
