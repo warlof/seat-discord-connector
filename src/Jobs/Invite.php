@@ -21,6 +21,7 @@
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use UnexpectedValueException;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
@@ -91,12 +92,15 @@ class Invite extends DiscordJobBase
     private function inviteUserIntoGuild()
     {
 
-        $corporation = CorporationInfo::find($this->discord_user->group->main_character->corporation_id);
         $nickname = $this->discord_user->group->main_character->name;
         $expected_nickname = $nickname;
 
-        if (setting('warlof.discord-connector.ticker', true))
+        if (setting('warlof.discord-connector.ticker', true)) {
+            $corporation = CorporationInfo::findOrFail($this->discord_user->group->main_character->corporation_id);
             $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $nickname);
+        }
+
+        $expected_nickname = Str::limit($expected_nickname, 32 - 3);
 
         $roles = Helper::allowedRoles($this->discord_user);
 
