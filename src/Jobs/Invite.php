@@ -100,11 +100,6 @@ class Invite extends DiscordJobBase
 
         $roles = Helper::allowedRoles($this->discord_user);
 
-        $guild_member = app('discord')->guild->getGuildMember([
-            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-            'user.id' => $this->discord_user->discord_id,
-        ]);
-
         $options = [
             'user.id' => $this->discord_user->discord_id,
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
@@ -112,11 +107,14 @@ class Invite extends DiscordJobBase
             'roles' => $roles,
         ];
 
-        if (isset($guild_member)) {
+        try {
+            $guild_member = app('discord')->guild->getGuildMember([
+                'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+                'user.id' => $this->discord_user->discord_id,
+            ]);
             app('discord')->guild->modifyGuildMember($options);
-        } else {
+        } catch (\Exception $e) {
             $options['access_token'] = $this->getAccessToken();
-
             $guild_member = app('discord')->guild->addGuildMember($options);
         }
 
