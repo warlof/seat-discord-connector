@@ -36,6 +36,13 @@ abstract class DiscordJobBase implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * The Discord nickname length limit.
+     * 
+     * @var int
+     */
+    const NICKNAME_LENGTH_LIMIT = 32;
+
+    /**
      * @var array
      */
     protected $tags = [];
