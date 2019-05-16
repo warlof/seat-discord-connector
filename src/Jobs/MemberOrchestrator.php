@@ -21,6 +21,7 @@
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 use RestCord\Model\Guild\GuildMember;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
@@ -137,6 +138,8 @@ class MemberOrchestrator extends DiscordJobBase
 
             if (setting('warlof.discord-connector.ticker', true))
                 $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $main_name);
+
+            $expected_nickname = Str::limit($expected_nickname, self::NICKNAME_LENGTH_LIMIT, '');
 
             if ($this->member->nick != $expected_nickname)
                 $new_nickname = $expected_nickname;

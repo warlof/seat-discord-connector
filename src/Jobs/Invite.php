@@ -100,7 +100,7 @@ class Invite extends DiscordJobBase
             $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $nickname);
         }
 
-        $expected_nickname = Str::limit($expected_nickname, 32 - 3);
+        $expected_nickname = Str::limit($expected_nickname, self::NICKNAME_LENGTH_LIMIT, '');
 
         $roles = Helper::allowedRoles($this->discord_user);
 
