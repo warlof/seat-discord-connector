@@ -21,7 +21,7 @@
 namespace Warlof\Seat\Connector\Discord\Commands;
 
 use Illuminate\Console\Command;
-use Warlof\Seat\Connector\Discord\Jobs\MemberDispatcher;
+use Warlof\Seat\Connector\Discord\Jobs\MemberOrchestrator;
 
 /**
  * Class DiscordUserPolicy
@@ -45,7 +45,7 @@ class DiscordUserPolicy extends Command
      */
     public function handle()
     {
-        MemberDispatcher::dispatch()->onQueue('high');
+        MemberOrchestrator::dispatch()->onQueue('high');
         $this->info('A job has been queued in order to invite and kick user from granted roles.');
     }
 

@@ -21,7 +21,7 @@
 namespace Warlof\Seat\Connector\Discord\Commands;
 
 use Illuminate\Console\Command;
-use Warlof\Seat\Connector\Discord\Jobs\MemberDispatcher;
+use Warlof\Seat\Connector\Discord\Jobs\MemberOrchestrator;
 
 /**
  * Class DiscordUserTerminator
@@ -46,7 +46,7 @@ class DiscordUserTerminator extends Command
     public function handle()
     {
         // queue the job and inform user
-        dispatch(new MemberDispatcher(true))->onQueue('high');
+        dispatch(new MemberOrchestrator(true))->onQueue('high');
 
         $this->info('A synchronization job has been queued in order to update discord/seat user relation.');
     }
