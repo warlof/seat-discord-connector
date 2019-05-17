@@ -23,8 +23,4 @@
  */
 return [
     'version'   => '3.1.6',
-    'loggly'    => [
-        'key' => 'b4aa3599-add7-4afc-aeb0-a9906b39f316',
-        'tag' => 'discord-connector',
-    ],
 ];
