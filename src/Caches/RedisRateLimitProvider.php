@@ -14,17 +14,15 @@ use RestCord\RateLimit\Provider\AbstractRateLimitProvider;
 
 class RedisRateLimitProvider extends AbstractRateLimitProvider
 {
+    const MAX_TTL = 60 * 60 * 24 * 7;
 
     /**
      * @param RequestInterface $request
      * @return string
      */
-    public function getKey(RequestInterface $request)
+    public function getKey($key)
     {
-        $prefix = 'seat-discord-connector';
-        $path = $request->getUri()->getPath();
-
-        return $prefix . ':' . strtolower($request->getMethod()) . strtr($path, ['/' => '.']);
+        return sprintf('seat.discord.connector.ratelimit.%s', $key);
     }
 
     /**
@@ -36,9 +34,10 @@ class RedisRateLimitProvider extends AbstractRateLimitProvider
      */
     public function getLastRequestTime(RequestInterface $request)
     {
-        $key = $this->getKey($request);
+        $route = $this->getRoute($request);
+        $key = $this->getKey(sprintf('%s.lastRequest', 'api'));
 
-        return Redis::hexists($key, 'last_request') ? floatval(Redis::hget($key, 'last_request')) : 0;
+        return Redis::exists($key) ? Redis::get($key) : null;
     }
 
     /**
@@ -49,9 +48,10 @@ class RedisRateLimitProvider extends AbstractRateLimitProvider
      */
     public function setLastRequestTime(RequestInterface $request)
     {
-        $key = $this->getKey($request);
+        $route = $this->getRoute($request);
+        $key = $this->getKey(sprintf('%s.lastRequest', 'api'));
 
-        Redis::hset($key, 'last_request', $this->getRequestTime($request));
+        Redis::setex($key, static::MAX_TTL, $this->getRequestTime($request));
     }
 
     /**
@@ -69,9 +69,13 @@ class RedisRateLimitProvider extends AbstractRateLimitProvider
      */
     public function getRequestAllowance(RequestInterface $request)
     {
-        $key = $this->getKey($request);
+        $route = $this->getRoute($request);
+        $key = $this->getKey(sprintf('%s.reset', 'api'));
 
-        return Redis::hexists($key, 'reset') ? (floatval(Redis::hget($key, 'reset')) - time()) * 1000000 : 0;
+        if (! Redis::exists($key))
+            return 0;
+
+        return (Redis::get($key) - time()) * 1000000;
     }
 
     /**
@@ -83,15 +87,15 @@ class RedisRateLimitProvider extends AbstractRateLimitProvider
      */
     public function setRequestAllowance(RequestInterface $request, ResponseInterface $response)
     {
-        $key = $this->getKey($request);
+        $route = $this->getRoute($request);
+        $key = $this->getKey(sprintf('%s.reset', 'api'));
 
         $remaining = $response->getHeaderLine('X-RateLimit-Remaining');
         $reset     = $response->getHeaderLine('X-RateLimit-Reset');
 
-        if (empty($remaining) || empty($response) || (int) $remaining > 0) {
+        if (empty($remaining) || empty($reset) || (int) $remaining[0] > 0)
             return;
-        }
 
-        Redis::hset($key, 'reset', $reset);
+        Redis::set($key, static::MAX_TTL, $reset[0]);
     }
 }

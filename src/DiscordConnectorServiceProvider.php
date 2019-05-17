@@ -136,7 +136,9 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
                 return new DiscordClient([
                     'tokenType'         => 'Bot',
                     'token'             => setting('warlof.discord-connector.credentials.bot_token', true),
-                    'rateLimitProvider' => new RedisRateLimitProvider(),
+                    'rateLimitProvider' => new RedisRateLimitProvider([
+                        'throwOnRatelimit' => false,
+                    ]),
                 ]);
             });
         }
