@@ -20,8 +20,10 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
+use RestCord\Interfaces\Guild as IGuild;
+use RestCord\Model\Guild\Guild;
+use RestCord\Model\Permissions\Role;
 use RestCord\Model\Guild\GuildMember;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
@@ -40,9 +42,24 @@ class MemberOrchestrator extends DiscordJobBase
     protected $tags = ['orchestrator'];
 
     /**
-     * @var GuildMember
+     * @var IGuild
      */
-    private $member;
+    private $client;
+
+    /**
+     * @var Guild
+     */
+    private $guild;
+
+    /**
+     * @var GuildMember[]
+     */
+    private $members;
+
+    /**
+     * @var Role[]
+     */
+    private $roles;
 
     /**
      * @var bool
@@ -59,14 +76,9 @@ class MemberOrchestrator extends DiscordJobBase
      * @param string $member
      * @param bool $terminator Determine if the orchestrator must run a massive kick
      */
-    public function __construct(GuildMember $member, bool $terminator = false)
+    public function __construct(bool $terminator = false)
     {
-        logger()->debug('Initialising member orchestrator for ' . $member->nick);
-
         $this->terminator = $terminator;
-        $this->member = $member;
-
-        array_push($this->tags, 'member_id:' . $member->user->id);
 
         // if the terminator flag has been passed, append terminator into tags
         if ($this->terminator)
@@ -85,97 +97,111 @@ class MemberOrchestrator extends DiscordJobBase
         if (is_null(setting('warlof.discord-connector.credentials.guild_id', true)))
             throw new DiscordSettingException();
 
-        Redis::throttle('seat-discord-connector:jobs.member_orchestrator')->allow(20)->every(10)->then(function() {
+        // retrieve Discord Client
+        $this->client = app('discord')->guild;
 
-            // in case terminator flag has not been specified, proceed using user defined mapping
-            if (! $this->terminator) {
-                $this->processMappingBase();
-                return;
-            }
+        // get Discord Guild metadata
+        $this->guild = $this->client->getGuild([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+        ]);
 
-            $this->updateMemberRoles([]);
+        // get Discord Guild Roles
+        $this->roles = collect($this->client->getGuildRoles([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+        ]));
 
-        }, function() {
+        // get Discord Guild Members
+        $this->members = $this->client->listGuildMembers([
+            'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
+            'limit' => 1000,
+        ]);
 
-            logger()->warning('A MemberOrchestrator job is already running. Delay job by 10 seconds.');
+        // loop over each Guild Member and apply policy
+        foreach ($this->members as $member) {
 
-            $this->release(10);
+            // ignore any bot user
+            if ($member->user->bot)
+                continue;
 
-        });
-    }
+            // ignore any Guild owner
+            if ($this->isOwner($member))
+                continue;
 
-    /**
-     * Set terminator flag to true.
-     */
-    public function setTerminatorFlag()
-    {
-        $this->terminator = true;
+            // ignore any Guild Administrator
+            if ($this->isAdministrator($member))
+                continue;
 
-        if (! in_array('terminator', $this->tags))
-            array_push($this->tags, 'terminator');
+            // attempt to retrieve the SeAT bind user
+            if (is_null($discord_user = $this->findSeATUserByDiscordGuildMember($member)))
+                continue;
+
+            // apply policy to current member
+            $this->processMappingBase($member, $discord_user);
+
+            // apply a throttler so we avoid to flood Discord Api
+            sleep(5);
+        }
     }
 
     /**
      * Prepare roles mapping and update user if required.
      *
+     * @param GuildMember $member
+     * @param DiscordUser $discord_user
      * @throws \Seat\Services\Exceptions\SettingException
      */
-    private function processMappingBase()
+    private function processMappingBase(GuildMember $member, DiscordUser $discord_user)
     {
         $new_nickname = null;
         $pending_drops = collect();
         $pending_adds = collect();
 
-        $discord_user = DiscordUser::where('discord_id', $this->member->user->id)->first();
+        // determine if the current Discord Member nickname is valid or flag it for change
+        $expected_nickname = $this->buildDiscordUserNickname($discord_user);
+        if ($member->nick !== $expected_nickname)
+            $new_nickname = $expected_nickname;
 
-        if (is_null($discord_user))
-            return;
-
-        if (! is_null($discord_user->group->main_character)) {
-            $corporation = CorporationInfo::find($discord_user->group->main_character->corporation_id);
-            $main_name = $discord_user->group->main_character->name;
-            $expected_nickname = $main_name;
-
-            if (setting('warlof.discord-connector.ticker', true))
-                $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $main_name);
-
-            $expected_nickname = Str::limit($expected_nickname, self::NICKNAME_LENGTH_LIMIT, '');
-
-            if ($this->member->nick != $expected_nickname)
-                $new_nickname = $expected_nickname;
-        }
-
-        foreach ($this->member->roles as $role_id) {
-            if (! Helper::isAllowedRole($role_id, $discord_user))
+        // loop over roles owned by the user and prepare to drop them
+        foreach ($member->roles as $role_id) {
+            if (! Helper::isAllowedRole($role_id, $discord_user) || $this->terminator)
                 $pending_drops->push($role_id);
         }
 
-        $roles = Helper::allowedRoles($discord_user);
+        // in case we are not in terminator mode, search for missing assignable roles
+        if (! $this->terminator) {
 
-        foreach ($roles as $role_id) {
-            if (! in_array($role_id, $this->member->roles))
-                $pending_adds->push($role_id);
+            // collect all currently valid roles
+            $roles = Helper::allowedRoles($discord_user);
+
+            // loop over granted roles and prepare to add them
+            foreach ($roles as $role_id) {
+                if (!in_array($role_id, $member->roles))
+                    $pending_adds->push($role_id);
+            }
+
         }
 
+        // determine if the user is requiring a role update
         $is_roles_outdated = $pending_adds->count() > 0 || $pending_drops->count() > 0;
 
-        if ($is_roles_outdated || ! is_null($new_nickname)) {
-            $this->updateMemberRoles($is_roles_outdated ? $roles : null, $new_nickname);
-        }
+        // apply changes to the guild member
+        if ($is_roles_outdated || ! is_null($new_nickname))
+            $this->updateMemberRoles($member, $is_roles_outdated ? $roles : null, $new_nickname);
     }
 
     /**
      * Update Discord user with new role mapping and nickname if required
      *
+     * @param GuildMember $member
      * @param array|null $roles
      * @param string|null $nickname
      * @throws \Seat\Services\Exceptions\SettingException
      */
-    private function updateMemberRoles(array $roles = null, string $nickname = null)
+    private function updateMemberRoles(GuildMember $member, array $roles = null, string $nickname = null)
     {
         $options = [
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
-            'user.id'  => $this->member->user->id,
+            'user.id'  => $member->user->id,
         ];
 
         if (! is_null($roles))
@@ -184,6 +210,70 @@ class MemberOrchestrator extends DiscordJobBase
         if (! is_null($nickname))
             $options['nick'] = $nickname;
 
-        app('discord')->guild->modifyGuildMember($options);
+        $this->client->modifyGuildMember($options);
+    }
+
+    /**
+     * Determine if the Guild Member is the Guild Owner
+     *
+     * @param GuildMember $member
+     * @return bool
+     */
+    private function isOwner(GuildMember $member) : bool
+    {
+        return $member->user->id === $this->guild->owner_id;
+    }
+
+    /**
+     * Determine if the Guild Member is an Administrator
+     *
+     * @param GuildMember $member
+     * @return bool
+     */
+    private function isAdministrator(GuildMember $member) : bool
+    {
+        $discord_permissions = Helper::EVERYONE;
+
+        foreach ($member->roles as $role_id)
+            $discord_permissions |= $this->roles->where('id', $role_id)->first()->permissions;
+
+        return $discord_permissions & Helper::ADMINISTRATOR === Helper::ADMINISTRATOR;
+    }
+
+    /**
+     * Retrieve the SeAT Binding based on a Discord Guild Member
+     *
+     * @param GuildMember $member
+     * @return DiscordUser|null
+     */
+    private function findSeATUserByDiscordGuildMember(GuildMember $member) : ?DiscordUser
+    {
+        return DiscordUser::where('discord_id', $member->user->id)->first();
+    }
+
+    /**
+     * Return a string which will be used as a Discord Guild Member Nickname
+     *
+     * @param DiscordUser $discord_user
+     * @return string
+     * @throws \Seat\Services\Exceptions\SettingException
+     */
+    private function buildDiscordUserNickname(DiscordUser $discord_user): string
+    {
+        // retrieve a character related to the Discord relationship
+        $character = $discord_user->group->main_character;
+        if (is_null($character))
+            $character = $discord_user->group->users->first()->character;
+
+        // init the discord nickname to the character name
+        $expected_nickname = $discord_user->group->main_character->name;
+
+        // in case ticker prefix is enabled, retrieve the corporation and prepend the ticker to the nickname
+        if (setting('warlof.discord-connector.ticker', true)) {
+            $corporation = CorporationInfo::find($character->corporation_id);
+            $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $expected_nickname);
+        }
+
+        return Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');
     }
 }
