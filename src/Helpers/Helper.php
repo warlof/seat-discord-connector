@@ -35,6 +35,27 @@ use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 class Helper
 {
     /**
+     * The Discord Public permission
+     *
+     * @var int
+     */
+    const EVERYONE = 0x00000000;
+
+    /**
+     * The Discord Administrator permission
+     *
+     * @var int
+     */
+    const ADMINISTRATOR = 0x00000008;
+
+    /**
+     * The Discord nickname length limit.
+     *
+     * @var int
+     */
+    const NICKNAME_LENGTH_LIMIT = 32;
+
+    /**
      * Return true if account is active
      *
      * An account is considered as active when both mail has been confirmed in case of mail activation,

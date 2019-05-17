@@ -100,7 +100,7 @@ class Invite extends DiscordJobBase
             $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $nickname);
         }
 
-        $expected_nickname = Str::limit($expected_nickname, self::NICKNAME_LENGTH_LIMIT, '');
+        $expected_nickname = Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');
 
         $roles = Helper::allowedRoles($this->discord_user);
 
@@ -116,6 +116,7 @@ class Invite extends DiscordJobBase
                 'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
                 'user.id' => $this->discord_user->discord_id,
             ]);
+
             app('discord')->guild->modifyGuildMember($options);
         } catch (\Exception $e) {
             $options['access_token'] = $this->getAccessToken();
