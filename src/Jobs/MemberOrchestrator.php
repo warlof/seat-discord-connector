@@ -20,6 +20,7 @@
 
 namespace Warlof\Seat\Connector\Discord\Jobs;
 
+use Exception;
 use Illuminate\Support\Str;
 use RestCord\Interfaces\Guild as IGuild;
 use RestCord\Model\Guild\Guild;
@@ -136,10 +137,11 @@ class MemberOrchestrator extends DiscordJobBase
                 continue;
 
             // apply policy to current member
-            $this->processMappingBase($member, $discord_user);
-
-            // apply a throttler so we avoid to flood Discord Api
-            sleep(5);
+            try {
+                $this->processMappingBase($member, $discord_user);
+            } catch (Exception $e) {
+                logger()->error($e->getMessage(), $e->getTrace());
+            }
         }
     }
 
@@ -211,6 +213,9 @@ class MemberOrchestrator extends DiscordJobBase
             $options['nick'] = $nickname;
 
         $this->client->modifyGuildMember($options);
+
+        // apply a throttler so we avoid to flood Discord Api
+        sleep(5);
     }
 
     /**
