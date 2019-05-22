@@ -242,7 +242,7 @@ class MemberOrchestrator extends DiscordJobBase
         foreach ($member->roles as $role_id)
             $discord_permissions |= $this->roles->where('id', $role_id)->first()->permissions;
 
-        return $discord_permissions & Helper::ADMINISTRATOR === Helper::ADMINISTRATOR;
+        return ($discord_permissions & Helper::ADMINISTRATOR) === Helper::ADMINISTRATOR;
     }
 
     /**
