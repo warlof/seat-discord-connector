@@ -180,7 +180,7 @@ class OAuthController extends Controller
             'grant_type'    => 'authorization_code',
             'code'          => $code,
             'redirect_uri'  => route('discord-connector.oauth.callback'),
-            'scope'         => implode(self::SCOPES, ' '),
+            'scope'         => implode(' ', self::SCOPES),
         ];
 
         $request = (new Client())->request('POST', 'https://discordapp.com/api/oauth2/token', [
