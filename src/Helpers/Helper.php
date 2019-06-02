@@ -70,19 +70,15 @@ class Helper
     }
 
     /**
-     * Return true if all API Key are still enable
+     * Filter character id that have a valid refresh token.
      *
      * @param Collection $characterIDs
-     * @return bool
+     * @return array
      */
-    public static function isEnabledKey(Collection $users) : bool
+    public static function getEnabledKey(Collection $users) : array
     {
-        // retrieve all token which are matching with the user IDs list
-        $tokens = RefreshToken::whereIn('character_id', $users->pluck('id')->toArray());
-
-        // compare both list
-        // if tokens amount is matching with characters list - return true
-        return ($users->count() == $tokens->count());
+        // retrieve character ids with a valid refresh token
+        return RefreshToken::whereIn('character_id', $users->pluck('id')->toArray())->pluck('character_id')->toArray();
     }
 
     /**
@@ -98,7 +94,9 @@ class Helper
         if (! Helper::isEnabledAccount($discord_user->group))
             return $channels;
 
-        if (! Helper::isEnabledKey($discord_user->group->users))
+        $enabled_character_ids = Helper::getEnabledKey($discord_user->group->users);
+        
+        if (empty($enabled_character_ids))
             return $channels;
 
         $rows = Group::join('warlof_discord_connector_role_groups', 'warlof_discord_connector_role_groups.group_id', '=', 'groups.id')
@@ -113,7 +111,7 @@ class Helper
                     )->union(
                         CharacterInfo::join('warlof_discord_connector_role_corporations', 'warlof_discord_connector_role_corporations.corporation_id', '=',
                                             'character_infos.corporation_id')
-                                     ->whereIn('character_infos.character_id', $discord_user->group->users->pluck('id')->toArray())
+                                     ->whereIn('character_infos.character_id', $enabled_character_ids)
                                      ->select('discord_role_id')
                     )->union(
                         CharacterInfo::join('character_titles', 'character_infos.character_id', '=', 'character_titles.character_id')
@@ -123,12 +121,12 @@ class Helper
                                          $join->on('warlof_discord_connector_role_titles.title_id', '=',
                                              'character_titles.title_id');
                                      })
-                                     ->whereIn('character_infos.character_id', $discord_user->group->users->pluck('id')->toArray())
+                                     ->whereIn('character_infos.character_id', $enabled_character_ids)
                                      ->select('discord_role_id')
                     )->union(
                         CharacterInfo::join('warlof_discord_connector_role_alliances', 'warlof_discord_connector_role_alliances.alliance_id', '=',
                                             'character_infos.alliance_id')
-                                     ->whereIn('character_infos.character_id', $discord_user->group->users->pluck('id')->toArray())
+                                     ->whereIn('character_infos.character_id', $enabled_character_ids)
                                      ->select('discord_role_id')
                     )->union(
                         DiscordRolePublic::select('discord_role_id')
