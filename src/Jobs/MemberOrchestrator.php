@@ -28,6 +28,7 @@ use RestCord\Model\Permissions\Role;
 use RestCord\Model\Guild\GuildMember;
 use Warlof\Seat\Connector\Discord\Exceptions\DiscordSettingException;
 use Warlof\Seat\Connector\Discord\Helpers\Helper;
+use Warlof\Seat\Connector\Discord\Models\DiscordLog;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 
@@ -140,7 +141,13 @@ class MemberOrchestrator extends DiscordJobBase
             try {
                 $this->processMappingBase($member, $discord_user);
             } catch (Exception $e) {
+                report($e);
                 logger()->error($e->getMessage(), $e->getTrace());
+                DiscordLog::create([
+                    'event' => 'sync',
+                    'message' => sprintf('Failed to sync user %s(%s). Please check worker log for more information.',
+                        $discord_user->nick, $discord_user->discord_id),
+                ]);
             }
         }
     }
@@ -187,8 +194,14 @@ class MemberOrchestrator extends DiscordJobBase
         $is_roles_outdated = $pending_adds->count() > 0 || $pending_drops->count() > 0;
 
         // apply changes to the guild member
-        if ($is_roles_outdated || ! is_null($new_nickname))
+        if ($is_roles_outdated || ! is_null($new_nickname)) {
             $this->updateMemberRoles($member, $is_roles_outdated ? $roles : null, $new_nickname);
+            DiscordLog::create([
+                'event' => 'sync',
+                'message' => sprintf('Successfully sync user %s(%s).',
+                    $discord_user->nick, $discord_user->discord_id),
+            ]);
+        }
     }
 
     /**
