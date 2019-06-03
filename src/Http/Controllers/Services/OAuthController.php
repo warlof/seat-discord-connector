@@ -69,6 +69,8 @@ class OAuthController extends Controller
         ]]);
 
         setting(['warlof.discord-connector.ticker', $request->input('discord-configuration-ticker')], true);
+        setting(['warlof.discord-connector.nickfmt', $request->input('discord-configuration-nick-format')], true);
+        setting(['warlof.discord-connector.strict', $request->input('discord-configuration-strict-security')], true);
 
         return redirect($this->oAuthAuthorization($request->input('discord-configuration-client'), $state));
     }

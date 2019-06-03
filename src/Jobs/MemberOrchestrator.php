@@ -112,10 +112,23 @@ class MemberOrchestrator extends DiscordJobBase
         ]));
 
         // get Discord Guild Members
-        $this->members = $this->client->listGuildMembers([
+        $this->members = [];
+        $after = null;
+        $options = [
             'guild.id' => intval(setting('warlof.discord-connector.credentials.guild_id', true)),
             'limit' => 1000,
-        ]);
+        ];
+        do {
+            if ($after) {
+                $options['after'] = $after;
+            }
+            $members = $this->client->listGuildMembers($options);
+            if (empty($members)) {
+                break;
+            }
+            $this->members = array_merge($this->members, $members);
+            $after = end($members)->user->id;
+        } while (true);
 
         // loop over each Guild Member and apply policy
         foreach ($this->members as $member) {
@@ -276,7 +289,8 @@ class MemberOrchestrator extends DiscordJobBase
         // in case ticker prefix is enabled, retrieve the corporation and prepend the ticker to the nickname
         if (setting('warlof.discord-connector.ticker', true)) {
             $corporation = CorporationInfo::find($character->corporation_id);
-            $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $expected_nickname);
+            $nickfmt = setting('warlof.discord-connector.nickfmt', true) ?: '[%s] %s';
+            $expected_nickname = sprintf($nickfmt, $corporation->ticker, $expected_nickname);
         }
 
         return Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');

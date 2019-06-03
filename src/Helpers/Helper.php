@@ -99,6 +99,11 @@ class Helper
         if (empty($enabled_character_ids))
             return $channels;
 
+        $strict_mode = setting('warlof.discord-cqonnector.strict', true);
+        $all_token_valid = sizeof($enabled_character_ids) == $discord_user->group->users->count();
+        if ($strict_mode && ! $all_token_valid) 
+            return $channels;
+
         $rows = Group::join('warlof_discord_connector_role_groups', 'warlof_discord_connector_role_groups.group_id', '=', 'groups.id')
                     ->select('discord_role_id')
                     ->where('groups.id', $discord_user->group_id)
