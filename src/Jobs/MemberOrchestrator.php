@@ -167,7 +167,7 @@ class MemberOrchestrator extends DiscordJobBase
 
         // determine if the current Discord Member nickname is valid or flag it for change
         $expected_nickname = $this->buildDiscordUserNickname($discord_user);
-        if ($member->nick !== $expected_nickname)
+        if ($member->nick !== $expected_nickname && $member->user->username !== $expected_nickname)
             $new_nickname = $expected_nickname;
 
         // loop over roles owned by the user and prepare to drop them
@@ -196,6 +196,8 @@ class MemberOrchestrator extends DiscordJobBase
         // apply changes to the guild member
         if ($is_roles_outdated || ! is_null($new_nickname)) {
             $this->updateMemberRoles($member, $is_roles_outdated ? $roles : null, $new_nickname);
+            $discord_user->nick = $new_nickname;
+            $discord_user->save();
             DiscordLog::create([
                 'event' => 'sync',
                 'message' => sprintf('Successfully sync user %s(%s).',
