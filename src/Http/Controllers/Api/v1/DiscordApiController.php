@@ -36,7 +36,9 @@ class DiscordApiController extends ApiController
      *     tags={"Discord Connector"},
      *     summary="Get a list of users, group id, and discord nickname",
      *     description="Returns list of users along with their discord mapping",
-     *     security={"ApiKeyAuth"},
+     *     security={
+     *          {"ApiKeyAuth": {}}
+     *     },
      *     @SWG\Response(response=200, description="Successful operation",
      *          @SWG\Schema(
      *              type="array",
@@ -57,6 +59,7 @@ class DiscordApiController extends ApiController
     public function getDiscordMappings()
     {
         $discord_users = DiscordUser::all();
+
         return response()->json($discord_users->map(
             function($item){
                 return [
