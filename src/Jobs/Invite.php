@@ -91,7 +91,8 @@ class Invite extends DiscordJobBase
 
         if (setting('warlof.discord-connector.ticker', true)) {
             $corporation = CorporationInfo::findOrFail($this->discord_user->group->main_character->corporation_id);
-            $expected_nickname = sprintf('[%s] %s', $corporation->ticker, $nickname);
+            $nickfmt = setting('warlof.discord-connector.nickfmt', true) ?: '[%s] %s';
+            $expected_nickname = sprintf($nickfmt, $corporation->ticker, $nickname);
         }
 
         $expected_nickname = Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');

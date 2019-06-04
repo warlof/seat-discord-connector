@@ -96,6 +96,26 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="discord-configuration-nick-format" class="col-md-4">Nickname Format</label>
+                        <div class="col-md-7">
+                            <div class="input-group input-group-sm">
+                                <input type="input" id="discord-configuration-nick-format"
+                                       name="discord-configuration-nick-format" value="{{ setting('warlof.discord-connector.nickfmt', true) ?: '[%s] %s' }}" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="discord-configuration-strict-security" class="col-md-4">Strict Security</label>
+                        <div class="col-md-7">
+                            <div class="input-group input-group-sm">
+                                <input type="checkbox" id="discord-configuration-strict-security"
+                                       name="discord-configuration-strict-security" @if(setting('warlof.discord-connector.strict', true)) checked="checked" @endif />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="box-footer">
