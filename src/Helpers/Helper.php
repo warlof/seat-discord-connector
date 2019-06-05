@@ -99,7 +99,7 @@ class Helper
         if (empty($enabled_character_ids))
             return $channels;
 
-        $strict_mode = setting('warlof.discord-cqonnector.strict', true);
+        $strict_mode = setting('warlof.discord-connector.strict', true);
         $all_token_valid = sizeof($enabled_character_ids) == $discord_user->group->users->count();
         if ($strict_mode && ! $all_token_valid) 
             return $channels;
