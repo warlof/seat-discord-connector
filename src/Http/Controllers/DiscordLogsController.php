@@ -43,7 +43,7 @@ class DiscordLogsController extends Controller
      */
     public function getJsonLogData()
     {
-        $logs = DiscordLog::orderBy('created_at', 'desc')->get();
+        $logs = DiscordLog::orderBy('created_at', 'desc');
 
         return app('DataTables')::of($logs)
             ->editColumn('created_at', function($row){

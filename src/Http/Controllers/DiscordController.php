@@ -20,6 +20,8 @@
 
 namespace Warlof\Seat\Connector\Discord\Http\Controllers;
 
+use Seat\Eveapi\Models\Character\CharacterInfo;
+use Seat\Services\Models\UserSetting;
 use Seat\Web\Http\Controllers\Controller;
 use Warlof\Seat\Connector\Discord\Models\DiscordUser;
 
@@ -71,7 +73,17 @@ class DiscordController extends Controller
         if (is_null(setting('warlof.discord-connector.credentials.bot_token', true)))
             return app('DataTables')::of(collect([]))->make(true);
 
-        $discord_users = DiscordUser::with('group')->get();
+        $discord_users = DiscordUser::query()
+            ->leftJoin((new UserSetting())->getTable(), function ($join) {
+                $join->on((new DiscordUser())->getTable() . '.group_id', '=', (new UserSetting())->getTable() . '.group_id')
+                     ->where((new UserSetting())->getTable() . '.name', '=', 'main_character_id');
+            })
+            ->leftJoin((new CharacterInfo())->getTable(), 'character_id', '=', 'value')
+            ->select(
+                (new DiscordUser())->getTable() . '.*',
+                (new UserSetting())->getTable() . '.value AS user_id',
+                (new CharacterInfo())->getTable() . '.name AS user_name'
+            );
 
         return app('DataTables')::of($discord_users)
             ->editColumn('group_id', function($row){
