@@ -129,7 +129,7 @@ class DiscordJsonController extends Controller
      * @param $discord_role_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getRemovePublic($discord_role_id)
+    public function removePublic($discord_role_id)
     {
         $channel_public = DiscordRolePublic::where('discord_role_id', $discord_role_id);
 
@@ -148,7 +148,7 @@ class DiscordJsonController extends Controller
      * @param $discord_role_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getRemoveUser($group_id, $discord_role_id)
+    public function removeUser($group_id, $discord_role_id)
     {
         $channel_user = DiscordRoleGroup::where('group_id', $group_id)
             ->where('discord_role_id', $discord_role_id);
@@ -168,7 +168,7 @@ class DiscordJsonController extends Controller
      * @param $discord_role_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getRemoveRole($role_id, $discord_role_id)
+    public function removeRole($role_id, $discord_role_id)
     {
         $channel_role = DiscordRoleRole::where('role_id', $role_id)
             ->where('discord_role_id', $discord_role_id);
@@ -188,7 +188,7 @@ class DiscordJsonController extends Controller
      * @param $discord_role_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getRemoveCorporation($corporation_id, $discord_role_id)
+    public function removeCorporation($corporation_id, $discord_role_id)
     {
         $channel_corporation = DiscordRoleCorporation::where('corporation_id', $corporation_id)
             ->where('discord_role_id', $discord_role_id);
@@ -209,7 +209,7 @@ class DiscordJsonController extends Controller
      * @param $discord_role_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getRemoveTitle($corporation_id, $title_id, $discord_role_id)
+    public function removeTitle($corporation_id, $title_id, $discord_role_id)
     {
         $channel_title = DiscordRoleTitle::where('corporation_id', $corporation_id)
             ->where('title_id', $title_id)
@@ -230,7 +230,7 @@ class DiscordJsonController extends Controller
      * @param $discord_role_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getRemoveAlliance($alliance_id, $discord_role_id)
+    public function removeAlliance($alliance_id, $discord_role_id)
     {
         $channel_alliance = DiscordRoleAlliance::where('alliance_id', $alliance_id)
             ->where('discord_role_id', $discord_role_id);

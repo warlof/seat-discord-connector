@@ -65,9 +65,9 @@ Route::group([
                 'uses' => 'DiscordSettingsController@getConfiguration',
             ]);
 
-            Route::get('/run/{commandName}', [
-                'as' => 'discord-connector.command.run',
-                'uses' => 'DiscordSettingsController@getSubmitJob',
+            Route::post('/run', [
+                'as'   => 'discord-connector.command.run',
+                'uses' => 'DiscordSettingsController@submitJob',
             ]);
 
             // OAuth
@@ -94,38 +94,38 @@ Route::group([
             'middleware' => 'bouncer:discord-connector.create',
         ], function() {
 
-            Route::get('/public/{channel_id}/remove', [
-                'as' => 'discord-connector.public.remove',
-                'uses' => 'DiscordJsonController@getRemovePublic',
+            Route::delete('/public/{channel_id}', [
+                'as'   => 'discord-connector.public.remove',
+                'uses' => 'DiscordJsonController@removePublic',
             ]);
 
-            Route::get('/users/{group_id}/{channel_id}/remove', [
-                'as' => 'discord-connector.user.remove',
-                'uses' => 'DiscordJsonController@getRemoveUser',
+            Route::delete('/users/{group_id}/{channel_id}', [
+                'as'   => 'discord-connector.user.remove',
+                'uses' => 'DiscordJsonController@removeUser',
             ]);
 
-            Route::get('/roles/{role_id}/{channel_id}/remove', [
-                'as' => 'discord-connector.role.remove',
-                'uses' => 'DiscordJsonController@getRemoveRole',
+            Route::delete('/roles/{role_id}/{channel_id}', [
+                'as'   => 'discord-connector.role.remove',
+                'uses' => 'DiscordJsonController@removeRole',
             ]);
 
-            Route::get('/corporations/{corporation_id}/{channel_id}/remove', [
-                'as' => 'discord-connector.corporation.remove',
-                'uses' => 'DiscordJsonController@getRemoveCorporation',
+            Route::delete('/corporations/{corporation_id}/{channel_id}', [
+                'as'   => 'discord-connector.corporation.remove',
+                'uses' => 'DiscordJsonController@removeCorporation',
             ]);
 
-            Route::get('/corporation/{corporation_id}/{title_id}/{channel_id}/remove', [
-                'as' => 'discord-connector.title.remove',
-                'uses' => 'DiscordJsonController@getRemoveTitle',
+            Route::delete('/corporation/{corporation_id}/{title_id}/{channel_id}', [
+                'as'   => 'discord-connector.title.remove',
+                'uses' => 'DiscordJsonController@removeTitle',
             ]);
 
-            Route::get('/alliances/{alliance_id}/{channel_id}/remove', [
-                'as' => 'discord-connector.alliance.remove',
-                'uses' => 'DiscordJsonController@getRemoveAlliance',
+            Route::delete('/alliances/{alliance_id}/{channel_id}', [
+                'as'   => 'discord-connector.alliance.remove',
+                'uses' => 'DiscordJsonController@removeAlliance',
             ]);
 
             Route::post('/', [
-                'as' => 'discord-connector.add',
+                'as'   => 'discord-connector.add',
                 'uses' => 'DiscordJsonController@postRelation',
             ]);
 
@@ -164,9 +164,9 @@ Route::group([
                     'uses' => 'DiscordController@getUsersData',
                 ]);
 
-                Route::post('/user/remove', [
-                    'as' => 'discord-connector.json.user.remove',
-                    'uses' => 'DiscordController@postRemoveUserMapping',
+                Route::delete('/user', [
+                    'as'   => 'discord-connector.json.user.remove',
+                    'uses' => 'DiscordController@removeUserMapping',
                 ]);
 
                 Route::get('/users/channels', [

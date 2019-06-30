@@ -27,9 +27,11 @@
             </td>
             <td>
                 <div class="btn-group">
-                    <a href="{{ route('discord-connector.title.remove', ['corporation_id' => $filter->corporation_id, 'title_id' => $filter->title_id, 'discord_role_id' => $filter->discord_role_id]) }}" type="button" class="btn btn-danger btn-xs col-xs-12">
-                        {{ trans('web::seat.remove') }}
-                    </a>
+                    <form method="post" action="{{ route('discord-connector.title.remove', ['corporation_id' => $filter->corporation_id, 'title_id' => $filter->title_id, 'discord_role_id' => $filter->discord_role_id]) }}">
+                        {{ csrf_field() }}
+                        {{ method_field('DELETE') }}
+                        <button type="submit" class="btn btn-danger btn-xs col-xs-12">{{ trans('web::seat.remove') }}</button>
+                    </form>
                 </div>
             </td>
         </tr>

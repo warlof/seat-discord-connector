@@ -29,6 +29,7 @@
             </table>
             <form method="post" id="user-remove" action="{{ route('discord-connector.json.user.remove') }}" class="hidden">
                 {{ csrf_field() }}
+                {{ method_field('DELETE') }}
                 <input type="hidden" name="discord_id" />
             </form>
         </div>

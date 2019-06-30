@@ -22,6 +22,7 @@ namespace Warlof\Seat\Connector\Discord\Http\Controllers;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Parsedown;
 use Seat\Web\Http\Controllers\Controller;
@@ -46,8 +47,14 @@ class DiscordSettingsController extends Controller
      * @param $command_name
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getSubmitJob($command_name)
+    public function submitJob(Request $request)
     {
+        $request->validate([
+            'command_name' => 'required|string',
+        ]);
+
+        $command_name = $request->input('command_name');
+
         $accepted_commands = [
             'discord:role:sync',
             'discord:user:sync',

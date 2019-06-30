@@ -40,7 +40,7 @@ class DiscordController extends Controller
     /**
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postRemoveUserMapping()
+    public function removeUserMapping()
     {
         $discord_id = request()->input('discord_id');
 
