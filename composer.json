@@ -11,7 +11,8 @@
         "eveseat/eveapi": "^3.0",
         "eveseat/web": "^3.0",
         "erusev/parsedown": "^1.7",
-        "restcord/restcord": "dev-develop"
+        "restcord/restcord": "dev-develop",
+        "ext-json": "*"
     },
     "license": "GPL-3.0-or-later",
     "authors": [

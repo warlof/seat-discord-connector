@@ -21,6 +21,7 @@
 namespace Warlof\Seat\Connector\Discord\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Seat\Eveapi\Models\Character\CharacterInfo;
 use Seat\Web\Models\Group;
 
 /**
@@ -81,5 +82,159 @@ class DiscordUser extends Model
     public function group()
     {
         return $this->belongsTo(Group::class, 'group_id', 'id');
+    }
+
+    /**
+     * Return true if account is active.
+     *
+     * @return bool
+     */
+    public function isEnabledAccount() : bool
+    {
+        return ($this->group->users->count() == $this->group->users->where('active', true)->count());
+    }
+
+    /**
+     * Determine if all registered characters got a valid token.
+     *
+     * @return bool
+     */
+    public function areAllTokensValid(): bool
+    {
+        return $this->group->refresh_tokens->count() == $this->group->users->count();
+    }
+
+    /**
+     * Return true if an user is allowed to have the specified role.
+     *
+     * @param int $role_id
+     * @return bool
+     */
+    public function isAllowedRole(int $role_id)
+    {
+        return in_array($role_id, $this->allowedRoles());
+    }
+
+    /**
+     * Return an array of roles ID to which the current user is granted.
+     *
+     * @return array
+     */
+    public function allowedRoles(): array
+    {
+        $strict_mode = setting('warlof.discord-connector.strict', true);
+
+        $active_tokens = $this->group->refresh_tokens;
+
+        if (empty($active_tokens))
+            return [];
+
+        if ($strict_mode && ! $this->areAllTokensValid())
+            return [];
+
+        if (! $this->isEnabledAccount())
+            return [];
+
+        $rows = $this->getDiscordRoleGroupBased(false)
+            ->union($this->getDiscordRoleRoleBased(false))
+            ->union($this->getDiscordRoleCorporationBased(false))
+            ->union($this->getDiscordRoleCorporationTitleBased(false))
+            ->union($this->getDiscordRoleAllianceBased(false))
+            ->union($this->getDiscordRolePublicBased(false))
+            ->get();
+
+        return $rows->unique('discord_role_id')->pluck('discord_role_id')->toArray();
+    }
+
+    /**
+     * Return all roles ID related to user mapping matching to the user.
+     *
+     * @param bool $get
+     * @return mixed
+     */
+    public function getDiscordRoleGroupBased(bool $get)
+    {
+        $roles = DiscordRoleGroup::join('groups', 'warlof_discord_connector_role_groups.group_id', '=', 'groups.id')
+            ->where('groups.id', $this->group_id)
+            ->select('discord_role_id');
+
+        return $get ? $roles->get() : $roles;
+    }
+
+    /**
+     * Return all roles ID related to role mapping matching to the user.
+     *
+     * @param bool $get
+     * @return mixed
+     */
+    public function getDiscordRoleRoleBased(bool $get)
+    {
+        $roles = DiscordRoleRole::join('group_role', 'warlof_discord_connector_role_roles.role_id', '=', 'group_role.role_id')
+            ->where('group_role.group_id', $this->group_id)
+            ->select('discord_role_id');
+
+        return $get ? $roles->get() : $roles;
+    }
+
+    /**
+     * Return all roles ID related to corporation mapping matching to the user.
+     *
+     * @param bool $get
+     * @return mixed
+     */
+    public function getDiscordRoleCorporationBased(bool $get)
+    {
+        $roles = DiscordRoleCorporation::join('character_infos', 'warlof_discord_connector_role_corporations.corporation_id', 'character_infos.corporation_id')
+            ->whereIn('character_infos.character_id', $this->group->users->pluck('id')->toArray())
+            ->select('discord_role_id');
+
+        return $get ? $roles->get() : $roles;
+    }
+
+    /**
+     * Return all roles ID related to corporation title mapping matching to the user.
+     *
+     * @param bool $get
+     * @return mixed
+     */
+    public function getDiscordRoleCorporationTitleBased(bool $get)
+    {
+        $roles = CharacterInfo::join('character_titles', 'character_infos.character_id', '=', 'character_titles.character_id')
+            ->join('warlof_discord_connector_role_titles', function ($join) {
+                $join->on('warlof_discord_connector_role_titles.title_id', '=', 'character_titles.title_id')
+                     ->on('warlof_discord_connector_role_titles.corporation_id', '=', 'character_infos.corporation_id');
+            })
+            ->whereIn('character_infos.character_id', $this->group->users->pluck('id')->toArray())
+            ->select('discord_role_id');
+
+        return $get ? $roles->get() : $roles;
+    }
+
+    /**
+     * Return all roles ID related to alliance mapping matching to the user.
+     *
+     * @param bool $get
+     * @return mixed
+     */
+    public function getDiscordRoleAllianceBased(bool $get)
+    {
+        $roles = DiscordRoleAlliance::join('character_infos', 'warlof_discord_connector_role_alliances.alliance_id', '=', 'character_infos.alliance_id')
+            ->whereIn('character_infos.character_id', $this->group->users->pluck('id')->toArray())
+            ->select('discord_role_id');
+
+        return $get ? $roles->get() : $roles;
+    }
+
+    /**
+     * Return all roles ID related to public mapping.
+     *
+     * @param bool $get
+     * @return mixed
+     */
+    public function getDiscordRolePublicBased(bool $get)
+    {
+        $roles = DiscordRolePublic::select('discord_role_id');
+
+        return $get ? $roles->get() : $roles;
     }
 }

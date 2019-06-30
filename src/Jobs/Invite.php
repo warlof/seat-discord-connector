@@ -97,7 +97,7 @@ class Invite extends DiscordJobBase
 
         $expected_nickname = Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');
 
-        $roles = Helper::allowedRoles($this->discord_user);
+        $roles = $this->discord_user->allowedRoles();
 
         $options = [
             'user.id' => $this->discord_user->discord_id,
@@ -135,6 +135,7 @@ class Invite extends DiscordJobBase
                 'message' => sprintf('Failed to invite %s(%s) to your server. Please check worker log for more information.',
                     $nickname, $this->discord_user->discord_id),
             ]);
+
             throw $e;
         }
 

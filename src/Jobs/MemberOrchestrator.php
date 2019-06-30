@@ -185,7 +185,7 @@ class MemberOrchestrator extends DiscordJobBase
 
         // loop over roles owned by the user and prepare to drop them
         foreach ($member->roles as $role_id) {
-            if (! Helper::isAllowedRole($role_id, $discord_user) || $this->terminator)
+            if (! $discord_user->isAllowedRole($role_id) || $this->terminator)
                 $pending_drops->push($role_id);
         }
 
@@ -193,7 +193,7 @@ class MemberOrchestrator extends DiscordJobBase
         if (! $this->terminator) {
 
             // collect all currently valid roles
-            $roles = Helper::allowedRoles($discord_user);
+            $roles = $discord_user->allowedRoles();
 
             // loop over granted roles and prepare to add them
             foreach ($roles as $role_id) {
