@@ -305,7 +305,9 @@ class MemberOrchestrator extends DiscordJobBase
         if (setting('warlof.discord-connector.ticker', true)) {
             $corporation = CorporationInfo::find($character->corporation_id);
             $nickfmt = setting('warlof.discord-connector.nickfmt', true) ?: '[%s] %s';
-            $expected_nickname = sprintf($nickfmt, $corporation->ticker, $expected_nickname);
+
+            if (! is_null($corporation))
+                $expected_nickname = sprintf($nickfmt, $corporation->ticker, $expected_nickname);
         }
 
         return Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');
