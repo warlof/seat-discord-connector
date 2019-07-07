@@ -157,8 +157,8 @@ class MemberOrchestrator extends DiscordJobBase
                 report($e);
                 logger()->error($e->getMessage(), $e->getTrace());
                 DiscordLog::create([
-                    'event' => 'sync',
-                    'message' => sprintf('Failed to sync user %s(%s). Please check worker log for more information.',
+                    'event' => 'sync-error',
+                    'message' => sprintf('Failed to sync user %s(%s). Please check worker and laravel log for more information.',
                         $discord_user->nick, $discord_user->discord_id),
                 ]);
             }
