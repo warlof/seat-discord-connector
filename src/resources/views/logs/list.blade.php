@@ -80,9 +80,9 @@
                         case 'kick':
                             return '<span class="label label-warning">' + data + '</span>';
                         case 'sync':
-                            return '<span class="label label-danger">' + data + '</span>';
-                        default:
                             return '<span class="label label-info">' + data + '</span>';
+                        default:
+                            return '<span class="label label-danger">' + data + '</span>';
                     }
                 }},
                 {data: 'message'}

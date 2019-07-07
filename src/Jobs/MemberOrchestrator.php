@@ -157,8 +157,8 @@ class MemberOrchestrator extends DiscordJobBase
                 report($e);
                 logger()->error($e->getMessage(), $e->getTrace());
                 DiscordLog::create([
-                    'event' => 'sync',
-                    'message' => sprintf('Failed to sync user %s(%s). Please check worker log for more information.',
+                    'event' => 'sync-error',
+                    'message' => sprintf('Failed to sync user %s(%s). Please check worker and laravel log for more information.',
                         $discord_user->nick, $discord_user->discord_id),
                 ]);
             }
@@ -305,7 +305,9 @@ class MemberOrchestrator extends DiscordJobBase
         if (setting('warlof.discord-connector.ticker', true)) {
             $corporation = CorporationInfo::find($character->corporation_id);
             $nickfmt = setting('warlof.discord-connector.nickfmt', true) ?: '[%s] %s';
-            $expected_nickname = sprintf($nickfmt, $corporation->ticker, $expected_nickname);
+
+            if (! is_null($corporation))
+                $expected_nickname = sprintf($nickfmt, $corporation->ticker, $expected_nickname);
         }
 
         return Str::limit($expected_nickname, Helper::NICKNAME_LENGTH_LIMIT, '');

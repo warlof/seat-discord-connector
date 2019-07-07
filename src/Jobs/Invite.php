@@ -130,9 +130,10 @@ class Invite extends DiscordJobBase
                     $nickname, $this->discord_user->discord_id),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DiscordLog::create([
-                'event' => 'invite',
-                'message' => sprintf('Failed to invite %s(%s) to your server. Please check worker log for more information.',
+                'event' => 'invite-error',
+                'message' => sprintf('Failed to invite %s(%s) to your server. Please check worker and laravel log for more information.',
                     $nickname, $this->discord_user->discord_id),
             ]);
 
