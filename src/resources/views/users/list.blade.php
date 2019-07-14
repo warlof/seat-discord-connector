@@ -62,7 +62,8 @@
                     data: null,
                     targets: -1,
                     defaultContent: '<button class="btn btn-xs btn-info">Roles</button> <button class="btn btn-xs btn-danger">Remove</button>',
-                    orderable: false
+                    orderable: false,
+                    searchable: false
                 }
                 @endif
             ],

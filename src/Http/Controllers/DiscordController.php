@@ -101,6 +101,15 @@ class DiscordController extends Controller
             ->editColumn('nick', function($row){
                 return $row->nick;
             })
+            ->filterColumn('user_name', function ($query, $keyword) {
+                $sql = 'LOWER(' . (new CharacterInfo())->getTable() . '.name) LIKE ?';
+                $query->orWhereRaw($sql, ["%{$keyword}%"]);
+            })
+            ->orderColumn('user_id', '-value $1')
+            ->filterColumn('user_id', function ($query, $keyword) {
+                $sql = 'LOWER(' . (new UserSetting())->getTable() . '.value) LIKE ?';
+                $query->orWhereRaw($sql, ["%{$keyword}%"]);
+            })
             ->removeColumn('refresh_token')
             ->removeColumn('access_token')
             ->removeColumn('expires_at')
