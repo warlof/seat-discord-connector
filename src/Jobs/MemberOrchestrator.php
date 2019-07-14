@@ -174,9 +174,10 @@ class MemberOrchestrator extends DiscordJobBase
      */
     private function processMappingBase(GuildMember $member, DiscordUser $discord_user)
     {
-        $new_nickname = null;
+        $roles         = null;
+        $new_nickname  = null;
         $pending_drops = collect();
-        $pending_adds = collect();
+        $pending_adds  = collect();
 
         // determine if the current Discord Member nickname is valid or flag it for change
         $expected_nickname = $this->buildDiscordUserNickname($discord_user);
