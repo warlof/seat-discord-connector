@@ -210,7 +210,7 @@ class MemberOrchestrator extends DiscordJobBase
         // apply changes to the guild member
         if ($is_roles_outdated || ! is_null($new_nickname)) {
             $this->updateMemberRoles($member, $is_roles_outdated ? $roles : null, $new_nickname);
-            $discord_user->nick = $new_nickname;
+            $discord_user->nick = $new_nickname ? $new_nickname : $discord_user->nick;
             $discord_user->save();
             DiscordLog::create([
                 'event' => 'sync',
