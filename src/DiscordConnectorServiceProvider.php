@@ -18,19 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Warlof\Seat\Connector\Discord;
+namespace Warlof\Seat\Connector\Drivers\Discord;
 
-use RestCord\DiscordClient;
 use Seat\Services\AbstractSeatPlugin;
-use Warlof\Seat\Connector\Discord\Caches\RedisRateLimitProvider;
-use Warlof\Seat\Connector\Discord\Commands\DiscordLogsClear;
-use Warlof\Seat\Connector\Discord\Commands\DiscordRoleSync;
-use Warlof\Seat\Connector\Discord\Commands\DiscordUserPolicy;
-use Warlof\Seat\Connector\Discord\Commands\DiscordUserTerminator;
+use Seat\Services\Exceptions\SettingException;
+use SocialiteProviders\Discord\Provider;
 
 /**
- * Class DiscordConnectorServiceProvider
- * @package Warlof\Seat\Connector\Discord
+ * Class DiscordConnectorServiceProvider.
+ *
+ * @package Warlof\Seat\Connector\Drivers\Discord
  */
 class DiscordConnectorServiceProvider extends AbstractSeatPlugin
 {
@@ -41,13 +38,7 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
      */
     public function boot()
     {
-        $this->addCommands();
         $this->addRoutes();
-        $this->addViews();
-        $this->addMigrations();
-        $this->addPublications();
-        $this->addTranslations();
-
         $this->addDiscordContainer();
         $this->configureApi();
     }
@@ -63,39 +54,30 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
             __DIR__ . '/Config/discord-connector.config.php', 'discord-connector.config');
 
         $this->mergeConfigFrom(
-            __DIR__ . '/Config/discord-connector.permissions.php', 'web.permissions');
+            __DIR__ . '/Config/seat-connector.config.php', 'seat-connector.drivers.discord');
 
-        $this->mergeConfigFrom(
-            __DIR__ . '/Config/package.sidebar.php', 'package.sidebar');
-    }
+        $discord = $this->app->make('Laravel\Socialite\Contracts\Factory');
+        $discord->extend('discord',
+            function ($app) use ($discord) {
 
-    /**
-     * Register cli commands
-     */
-    private function addCommands()
-    {
-        $this->commands([
-        	DiscordLogsClear::class,
-	        DiscordUserPolicy::class,
-            DiscordUserTerminator::class,
-            DiscordRoleSync::class,
-        ]);
-    }
+                $config = [
+                    'client_id'     => '',
+                    'client_secret' => '',
+                    'redirect'      => '',
+                ];
 
-    /**
-     * Import migrations
-     */
-    private function addMigrations()
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations/');
-    }
+                try {
+                    $settings = setting('seat-connector.drivers.discord', true);
 
-    /**
-     * Import translations
-     */
-    private function addTranslations()
-    {
-        $this->loadTranslationsFrom(__DIR__ . '/lang', 'discord-connector');
+                    if (! is_null($settings)) {
+                        $config['client_id']     = $settings->client_id;
+                        $config['client_secret'] = $settings->client_secret;
+                        $config['redirect']      = route('seat-connector.drivers.discord.callback');
+                    }
+                } catch (SettingException $e) { }
+
+                return $discord->buildProvider(Provider::class, $config);
+            });
     }
 
     /**
@@ -106,45 +88,6 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
         if (! $this->app->routesAreCached()) {
             include __DIR__ . '/Http/routes.php';
         }
-    }
-
-    /**
-     * Register views
-     */
-    private function addViews()
-    {
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'discord-connector');
-    }
-
-    /**
-     * Import migration and static content
-     */
-    private function addPublications()
-    {
-        $this->publishes([
-            __DIR__ . '/resources/assets/css/' => public_path('web/css'),
-        ]);
-    }
-
-    private function addDiscordContainer()
-    {
-        // push discord client into container as singleton if token has been set
-        $bot_token = setting('warlof.discord-connector.credentials.bot_token', true);
-
-        if (! is_null($bot_token)) {
-            $this->app->singleton('discord', function () {
-                return new DiscordClient([
-                    'tokenType'         => 'Bot',
-                    'token'             => setting('warlof.discord-connector.credentials.bot_token', true),
-                    'rateLimitProvider' => new RedisRateLimitProvider([
-                        'throwOnRatelimit' => false,
-                    ]),
-                ]);
-            });
-        }
-
-        // bind discord alias to DiscordClient
-        $this->app->alias('discord', DiscordClient::class);
     }
 
     private function configureApi()
