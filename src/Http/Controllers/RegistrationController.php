@@ -17,6 +17,7 @@ use Warlof\Seat\Connector\Models\User;
 class RegistrationController extends Controller
 {
     /**
+     * @return mixed
      * @throws \Seat\Services\Exceptions\SettingException
      * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
      */
@@ -36,8 +37,6 @@ class RegistrationController extends Controller
         $redirect_uri = route('seat-connector.drivers.discord.callback');
 
         $config = new Config($settings->client_id, $settings->client_secret, $redirect_uri);
-
-        //dd($config);
 
         return Socialite::with('discord')->setConfig($config)->redirect();
     }

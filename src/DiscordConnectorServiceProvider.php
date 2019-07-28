@@ -39,7 +39,6 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     public function boot()
     {
         $this->addRoutes();
-        $this->addDiscordContainer();
         $this->configureApi();
     }
 

@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
 Route::group([
     'namespace' => 'Warlof\Seat\Connector\Discord\Http\Controllers\Api\v1',
     'prefix' => 'api',
@@ -29,10 +30,11 @@ Route::group([
         });
     });
 });
+*/
 
 Route::group([
-    'namespace' => 'Warlof\Seat\Connector\Drivers\Discord\Http\Controllers',
-    'prefix'    => 'seat-connector',
+    'namespace'  => 'Warlof\Seat\Connector\Drivers\Discord\Http\Controllers',
+    'prefix'     => 'seat-connector',
     'middleware' => ['web', 'auth', 'locale'],
 ], function () {
 
@@ -41,12 +43,12 @@ Route::group([
     ], function () {
 
         Route::get('/discord', [
-            'as' => 'seat-connector.drivers.discord.registration',
+            'as'   => 'seat-connector.drivers.discord.registration',
             'uses' => 'RegistrationController@redirectToProvider',
         ]);
 
         Route::get('/discord/callback', [
-            'as' => 'seat-connector.drivers.discord.callback',
+            'as'   => 'seat-connector.drivers.discord.callback',
             'uses' => 'RegistrationController@handleProviderCallback',
         ]);
 

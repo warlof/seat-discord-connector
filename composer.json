@@ -8,9 +8,9 @@
         }
     },
     "require": {
+        "ext-json": "*",
         "warlof/seat-connector": "^1.0",
-        "socialiteproviders/discord": "v2.0.2",
-        "ext-json": "*"
+        "socialiteproviders/discord": "v2.0.2"
     },
     "license": "GPL-3.0-or-later",
     "authors": [
