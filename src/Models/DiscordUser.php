@@ -22,6 +22,7 @@ namespace Warlof\Seat\Connector\Discord\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Character\CharacterInfo;
+use Seat\Eveapi\Models\RefreshToken;
 use Seat\Web\Models\Group;
 
 /**
@@ -105,6 +106,16 @@ class DiscordUser extends Model
     }
 
     /**
+     * @return array
+     */
+    public function getEnabledKeys() : array
+    {
+        return RefreshToken::whereIn('character_id', $this->group->users->pluck('id')->toArray())
+            ->pluck('character_id')
+            ->toArray();
+    }
+
+    /**
      * Return true if an user is allowed to have the specified role.
      *
      * @param int $role_id
@@ -185,7 +196,7 @@ class DiscordUser extends Model
     public function getDiscordRoleCorporationBased(bool $get)
     {
         $roles = DiscordRoleCorporation::join('character_infos', 'warlof_discord_connector_role_corporations.corporation_id', 'character_infos.corporation_id')
-            ->whereIn('character_infos.character_id', $this->group->users->pluck('id')->toArray())
+            ->whereIn('character_infos.character_id', $this->getEnabledKeys())
             ->select('discord_role_id');
 
         return $get ? $roles->get() : $roles;
@@ -204,7 +215,7 @@ class DiscordUser extends Model
                 $join->on('warlof_discord_connector_role_titles.title_id', '=', 'character_titles.title_id')
                      ->on('warlof_discord_connector_role_titles.corporation_id', '=', 'character_infos.corporation_id');
             })
-            ->whereIn('character_infos.character_id', $this->group->users->pluck('id')->toArray())
+            ->whereIn('character_infos.character_id', $this->getEnabledKeys())
             ->select('discord_role_id');
 
         return $get ? $roles->get() : $roles;
@@ -219,7 +230,7 @@ class DiscordUser extends Model
     public function getDiscordRoleAllianceBased(bool $get)
     {
         $roles = DiscordRoleAlliance::join('character_infos', 'warlof_discord_connector_role_alliances.alliance_id', '=', 'character_infos.alliance_id')
-            ->whereIn('character_infos.character_id', $this->group->users->pluck('id')->toArray())
+            ->whereIn('character_infos.character_id', $this->getEnabledKeys())
             ->select('discord_role_id');
 
         return $get ? $roles->get() : $roles;
