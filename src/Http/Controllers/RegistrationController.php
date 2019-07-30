@@ -74,6 +74,6 @@ class RegistrationController extends Controller
         ]);
 
         // send the user to the guild
-        return redirect()->route('seat-connector.identities');
+        return redirect()->to(sprintf('https://discordapp.com/channels/%s', $client->getGuildId()));
     }
 }

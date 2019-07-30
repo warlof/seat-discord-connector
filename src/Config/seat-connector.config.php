@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name' => 'discord',
-    'icon'      => 'fa-discord',
-    'client'    => \Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient::class,
+    'name'   => 'discord',
+    'icon'   => 'fa-gamepad',
+    'client' => \Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient::class,
 ];
