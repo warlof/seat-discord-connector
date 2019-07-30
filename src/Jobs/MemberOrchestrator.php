@@ -147,8 +147,28 @@ class MemberOrchestrator extends DiscordJobBase
                 continue;
 
             // attempt to retrieve the SeAT bind user
-            if (is_null($discord_user = $this->findSeATUserByDiscordGuildMember($member)))
+            if (is_null($discord_user = $this->findSeATUserByDiscordGuildMember($member))) {
+
+                // in case we're not in terminator mode - ignore the user and assume the unmap is legit
+                if (! $this->terminator)
+                    continue;
+
+                // otherwise - remove all roles from the user
+                try {
+                    $this->updateMemberRoles($member, []);
+                } catch (Exception $e) {
+                    report($e);
+                    logger()->error($e->getMessage(), $e->getTrace());
+                    DiscordLog::create([
+                        'event' => 'sync-error',
+                        'message' => sprintf('Failed to sync user %s(%s). Please check worker and laravel log for more information.',
+                            $member->nick, $member->user->id),
+                    ]);
+                }
+
+                // ignore the remaining process as we've already revoke the user - which is unknown by SeAT
                 continue;
+            }
 
             // apply policy to current member
             try {
