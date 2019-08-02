@@ -3,9 +3,11 @@
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Uri;
 use Warlof\Seat\Connector\Drivers\IClient;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
+use Warlof\Seat\Connector\Drivers\Discord\Caches\RedisRateLimitProvider;
 use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
 
 /**
@@ -28,6 +30,11 @@ class DiscordClient implements IClient
      * @var \GuzzleHttp\Client
      */
     private $client;
+
+    /**
+     * @var \Warlof\Seat\Connector\Drivers\Discord\Caches\RedisRateLimitProvider
+     */
+    private $throttler;
 
     /**
      * @var string
@@ -58,6 +65,8 @@ class DiscordClient implements IClient
     {
         $this->guild_id  = $parameters['guild_id'];
         $this->bot_token = $parameters['bot_token'];
+
+        $this->throttler = new RedisRateLimitProvider();
 
         $this->members = collect();
         $this->roles   = collect();
@@ -193,6 +202,16 @@ class DiscordClient implements IClient
                 ],
             ]);
 
+        $sleep = $this->throttler->getRequestAllowance(new Uri($uri));
+
+        if ($sleep > 0) {
+            logger()->debug(
+                sprintf('[seat-connector][discord] Request to /%s has been delayed by %d seconds', $uri, $sleep));
+            sleep($sleep);
+        }
+
+        $this->throttler->setLastRequestTime(new Uri($uri));
+
         if ($method == 'GET') {
             $response = $this->client->request($method, $uri, [
                 'query' => $arguments,
@@ -203,6 +222,13 @@ class DiscordClient implements IClient
             ]);
         }
 
+        logger()->debug(
+            sprintf('[seat-connector][discord] [http %d, %s] %s -> /%s',
+                $response->getStatusCode(), $response->getReasonPhrase(), $method, $uri)
+        );
+
+        $this->throttler->setRequestAllowance(new Uri($uri), $response);
+
         return json_decode($response->getBody(), true);
     }
 
@@ -211,20 +237,34 @@ class DiscordClient implements IClient
      */
     private function seedMembers()
     {
-        $members = $this->sendCall('GET', '/guilds/{guild.id}/members', [
-            'guild.id' => $this->guild_id,
-            'limit'    => 1000,
-        ]);
+        $after = null;
 
-        foreach ($members as $member_attributes) {
+        do {
+            $options= [
+                'guild.id' => $this->guild_id,
+                'limit'    => 1000,
+            ];
 
-            // skip all bot users
-            if (array_key_exists('bot', $member_attributes['user']) && $member_attributes['user']['bot'])
-                continue;
+            if ($after)
+                $options['after'] = $after;
 
-            $member = new DiscordMember($member_attributes);
-            $this->members->put($member->getClientId(), $member);
-        }
+            $members = $this->sendCall('GET', '/guilds/{guild.id}/members', $options);
+
+            if (empty($members))
+                break;
+
+            $after = end($members)['user']['id'];
+
+            foreach ($members as $member_attributes) {
+
+                // skip all bot users
+                if (array_key_exists('bot', $member_attributes['user']) && $member_attributes['user']['bot'])
+                    continue;
+
+                $member = new DiscordMember($member_attributes);
+                $this->members->put($member->getClientId(), $member);
+            }
+        } while (true);
     }
 
     /**
