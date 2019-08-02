@@ -54,4 +54,16 @@ Route::group([
 
     });
 
+    Route::group([
+        'prefix' => 'settings',
+        'middleware' => 'bouncer:superuser',
+    ], function () {
+
+        Route::post('/discord', [
+            'as' => 'seat-connector.drivers.discord.setup',
+            'uses' => 'SettingsController@store',
+        ]);
+
+    });
+
 });

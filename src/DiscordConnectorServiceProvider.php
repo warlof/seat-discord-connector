@@ -40,6 +40,7 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     {
         $this->addRoutes();
         $this->configureApi();
+        $this->addTranslations();
     }
 
     /**
@@ -87,6 +88,11 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
         if (! $this->app->routesAreCached()) {
             include __DIR__ . '/Http/routes.php';
         }
+    }
+
+    private function addTranslations()
+    {
+        $this->loadTranslationsFrom(__DIR__ . '/lang', 'seat-connector-discord');
     }
 
     private function configureApi()
