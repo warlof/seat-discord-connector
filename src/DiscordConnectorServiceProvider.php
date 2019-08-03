@@ -38,7 +38,6 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     public function boot()
     {
         $this->addRoutes();
-        $this->configureApi();
         $this->addTranslations();
     }
 
@@ -79,22 +78,6 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     private function addTranslations()
     {
         $this->loadTranslationsFrom(__DIR__ . '/lang', 'seat-connector-discord');
-    }
-
-    private function configureApi()
-    {
-        // ensure current annotations setting is an array of path or transform into it
-        $current_annotations = config('l5-swagger.paths.annotations');
-        if (! is_array($current_annotations))
-            $current_annotations = [$current_annotations];
-
-        // merge paths together and update config
-        config([
-            'l5-swagger.paths.annotations' => array_unique(array_merge($current_annotations, [
-                __DIR__ . '/Models',
-                __DIR__ . '/Http/Controllers/Api/v1',
-            ])),
-        ]);
     }
 
     /**
