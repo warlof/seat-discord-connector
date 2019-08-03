@@ -48,7 +48,7 @@ Route::group([
         ]);
 
         Route::get('/discord/callback', [
-            'as'   => 'seat-connector.drivers.discord.callback',
+            'as'   => 'seat-connector.drivers.discord.registration.callback',
             'uses' => 'RegistrationController@handleProviderCallback',
         ]);
 
@@ -60,8 +60,13 @@ Route::group([
     ], function () {
 
         Route::post('/discord', [
-            'as' => 'seat-connector.drivers.discord.setup',
+            'as' => 'seat-connector.drivers.discord.settings',
             'uses' => 'SettingsController@store',
+        ]);
+
+        Route::get('/discord/callback', [
+            'as' => 'seat-connector.drivers.discord.settings.callback',
+            'uses' => 'SettingsController@handleProviderCallback',
         ]);
 
     });

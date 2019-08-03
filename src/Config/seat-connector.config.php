@@ -15,5 +15,10 @@ return [
             'label' => 'seat-connector-discord::seat.client_secret',
             'type'  => 'text',
         ],
+        [
+            'name'  => 'bot_token',
+            'label' => 'seat-connector-discord::seat.bot_token',
+            'type'  => 'text',
+        ],
     ],
 ];

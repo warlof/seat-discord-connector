@@ -21,7 +21,6 @@
 namespace Warlof\Seat\Connector\Drivers\Discord;
 
 use Seat\Services\AbstractSeatPlugin;
-use Seat\Services\Exceptions\SettingException;
 use SocialiteProviders\Discord\Provider;
 
 /**
@@ -59,24 +58,11 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
         $discord = $this->app->make('Laravel\Socialite\Contracts\Factory');
         $discord->extend('discord',
             function ($app) use ($discord) {
-
-                $config = [
+                return $discord->buildProvider(Provider::class, [
                     'client_id'     => '',
                     'client_secret' => '',
                     'redirect'      => '',
-                ];
-
-                try {
-                    $settings = setting('seat-connector.drivers.discord', true);
-
-                    if (! is_null($settings)) {
-                        $config['client_id']     = $settings->client_id;
-                        $config['client_secret'] = $settings->client_secret;
-                        $config['redirect']      = route('seat-connector.drivers.discord.callback');
-                    }
-                } catch (SettingException $e) { }
-
-                return $discord->buildProvider(Provider::class, $config);
+                ]);
             });
     }
 

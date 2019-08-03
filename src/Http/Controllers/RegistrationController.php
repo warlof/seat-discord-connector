@@ -16,6 +16,10 @@ use Warlof\Seat\Connector\Models\User;
  */
 class RegistrationController extends Controller
 {
+    const SCOPES = [
+        'identify', 'guilds.join',
+    ];
+
     /**
      * @return mixed
      * @throws \Seat\Services\Exceptions\SettingException
@@ -23,7 +27,7 @@ class RegistrationController extends Controller
      */
     public function redirectToProvider()
     {
-        $settings  = setting('seat-connector.drivers.discord', true);
+        $settings = setting('seat-connector.drivers.discord', true);
 
         if (is_null($settings) || ! is_object($settings))
             throw new DriverSettingsException('The Driver has not been configured yet.');
@@ -34,11 +38,11 @@ class RegistrationController extends Controller
         if (! property_exists($settings, 'client_secret') || is_null($settings->client_secret) || $settings->client_secret == '')
             throw new DriverSettingsException('Parameter client_secret is missing.');
 
-        $redirect_uri = route('seat-connector.drivers.discord.callback');
+        $redirect_uri = route('seat-connector.drivers.discord.registration.callback');
 
         $config = new Config($settings->client_id, $settings->client_secret, $redirect_uri);
 
-        return Socialite::with('discord')->setConfig($config)->redirect();
+        return Socialite::driver('discord')->setConfig($config)->setScopes(self::SCOPES)->redirect();
     }
 
     /**
@@ -51,8 +55,14 @@ class RegistrationController extends Controller
         // retrieve driver instance
         $client = DiscordClient::getInstance();
 
+        $settings = setting('seat-connector.drivers.discord', true);
+
+        $redirect_uri = route('seat-connector.drivers.discord.registration.callback');
+
+        $config = new Config($settings->client_id, $settings->client_secret, $redirect_uri);
+
         // retrieve authenticated user
-        $socialite_user = Socialite::driver('discord')->user();
+        $socialite_user = Socialite::driver('discord')->setConfig($config)->user();
 
         // update or create the connector user
         $driver_user = User::updateOrCreate([
