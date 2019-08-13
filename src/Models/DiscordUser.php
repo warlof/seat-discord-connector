@@ -210,10 +210,11 @@ class DiscordUser extends Model
      */
     public function getDiscordRoleCorporationTitleBased(bool $get)
     {
-        $roles = CharacterInfo::join('character_titles', 'character_infos.character_id', '=', 'character_titles.character_id')
+        $roles = CharacterInfo::join('character_info_corporation_title', 'character_infos.character_id', '=', 'character_info_corporation_title.character_info_character_id')
+            ->join('corporation_titles', 'character_titles.corporation_title_id', '=', 'corporation_titles.id')
             ->join('warlof_discord_connector_role_titles', function ($join) {
-                $join->on('warlof_discord_connector_role_titles.title_id', '=', 'character_titles.title_id')
-                     ->on('warlof_discord_connector_role_titles.corporation_id', '=', 'character_infos.corporation_id');
+                $join->on('warlof_discord_connector_role_titles.title_id', '=', 'corporation_titles.title_id')
+                     ->on('warlof_discord_connector_role_titles.corporation_id', '=', 'corporation_titles.corporation_id');
             })
             ->whereIn('character_infos.character_id', $this->getEnabledKeys())
             ->select('discord_role_id');
