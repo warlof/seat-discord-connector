@@ -206,6 +206,12 @@ class MemberOrchestrator extends DiscordJobBase
 
         // loop over roles owned by the user and prepare to drop them
         foreach ($member->roles as $role_id) {
+
+            // ignore managed roles from the process (ie: booster)
+            if ($this->roles->where('id', $role_id)->first()->managed)
+                continue;
+
+            // in case the user should not have the current role, place its ID into the revocation pending list
             if (! $discord_user->isAllowedRole($role_id) || $this->terminator)
                 $pending_drops->push($role_id);
         }
@@ -218,7 +224,12 @@ class MemberOrchestrator extends DiscordJobBase
 
             // loop over granted roles and prepare to add them
             foreach ($roles as $role_id) {
-                if (!in_array($role_id, $member->roles))
+
+                // ignore managed roles from the process (ie: booster)
+                if ($this->roles->where('id', $role_id)->first()->managed)
+                    continue;
+
+                if (! in_array($role_id, $member->roles))
                     $pending_adds->push($role_id);
             }
 
