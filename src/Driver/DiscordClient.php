@@ -281,6 +281,9 @@ class DiscordClient implements IClient
         foreach ($roles as $role_attributes) {
             if ($role_attributes['name'] == '@everyone') continue;
 
+            // ignore managed roles (ie: booster)
+            if ($role_attributes['managed']) continue;
+
             $role = new DiscordRole($role_attributes);
             $this->roles->put($role->getId(), $role);
         }

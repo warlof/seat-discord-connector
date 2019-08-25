@@ -103,7 +103,11 @@ class DiscordMember implements IUser
     {
         if ($this->roles->isEmpty()) {
             foreach ($this->role_ids as $role_id) {
-                $this->roles->put($role_id, DiscordClient::getInstance()->getSet($role_id));
+                $set = DiscordClient::getInstance()->getSet($role_id);
+
+                if (is_null($set)) continue;
+
+                $this->roles->put($role_id, $set);
             }
         }
 
