@@ -76,11 +76,12 @@ class DiscordMember implements IUser
 
     /**
      * @param string $name
+     * @return bool
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Seat\Services\Exceptions\SettingException
      * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
      */
-    public function setName(string $name)
+    public function setName(string $name): bool
     {
         $nickname = Str::limit($name, 32, '');
 
@@ -91,6 +92,8 @@ class DiscordMember implements IUser
         ]);
 
         $this->nick = $nickname;
+
+        return true;
     }
 
     /**
