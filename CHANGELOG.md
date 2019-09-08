@@ -1,3 +1,12 @@
+# 4.0.0
+- Switch to an universal SeAT Connector layout : `warlof/seat-connector`
+- A data conversion is available with `php artisan seat-connector:convert:discord`. You will have to setup the connector into `Connector > Setup`
+- Permission `discord-connector:view` has been replaced by `seat-connector:view`
+- Permission `discord-connector:security` has been replaced by `seat-connector:security`
+- Permissions `discord-connector:create` and `discord-connector:setup`
+- In case you're encountering issue, please open a new ticker [here](https://github.com/warlof/seat-connector/issues)
+- In case you have some trouble with the early 4.x generation, you can stick to previous 3.x using `composer require warlof/seat-discord-connector:^3.3`
+
 # 3.1.2
 - Address an issue which was preventing to sort properly values into User Mapping table [#19](https://github.com/warlof/seat-discord-connector/issues/19)
 - Address an issue which was preventing to search values into User Mapping table [#18](https://github.com/warlof/seat-discord-connector/issues/18)
