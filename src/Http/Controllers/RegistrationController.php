@@ -36,7 +36,7 @@ use Warlof\Seat\Connector\Models\User;
 class RegistrationController extends Controller
 {
     const SCOPES = [
-        'identify', 'guilds.join',
+        'identify', 'email', 'guilds.join',
     ];
 
     /**
