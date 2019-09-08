@@ -18,19 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Warlof\Seat\Connector\Discord\Helpers;
-
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Seat\Eveapi\Models\Character\CharacterInfo;
-use Seat\Eveapi\Models\RefreshToken;
-use Seat\Web\Models\Group;
-use Warlof\Seat\Connector\Discord\Models\DiscordRolePublic;
-use Warlof\Seat\Connector\Discord\Models\DiscordUser;
+namespace Warlof\Seat\Connector\Drivers\Discord\Helpers;
 
 /**
- * Class Helper
- * @package Warlof\Seat\Connector\Discord\Helpers
+ * Class Helper.
+ *
+ * @package Warlof\Seat\Connector\Drivers\Discord\Helpers
  */
 class Helper
 {
@@ -40,21 +33,18 @@ class Helper
      * @var int
      */
     const EVERYONE = 0x00000000;
-
     /**
      * The Discord Administrator permission
      *
      * @var int
      */
     const ADMINISTRATOR = 0x00000008;
-
     /**
      * The Discord nickname length limit.
      *
      * @var int
      */
     const NICKNAME_LENGTH_LIMIT = 32;
-
     /**
      * Determine the value based on a list of masks by applying bitwise OR
      *
@@ -64,10 +54,8 @@ class Helper
     public static function arrayBitwiseOr(array $masks): int
     {
         $value = 0;
-
         foreach ($masks as $mask)
             $value |= $mask;
-
         return $value;
     }
 }

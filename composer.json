@@ -4,15 +4,13 @@
     "type": "seat-plugin",
     "autoload": {
         "psr-4": {
-            "Warlof\\Seat\\Connector\\Discord\\": "src/"
+            "Warlof\\Seat\\Connector\\Drivers\\Discord\\": "src/"
         }
     },
     "require": {
-        "eveseat/eveapi": "^3.0",
-        "eveseat/web": "^3.0",
-        "erusev/parsedown": "^1.7",
-        "restcord/restcord": "dev-develop",
-        "ext-json": "*"
+        "ext-json": "*",
+        "warlof/seat-connector": "^1.3",
+        "socialiteproviders/discord": "v2.0.2"
     },
     "license": "GPL-3.0-or-later",
     "authors": [
@@ -25,7 +23,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Warlof\\Seat\\Connector\\Discord\\DiscordConnectorServiceProvider"
+                "Warlof\\Seat\\Connector\\Drivers\\Discord\\DiscordConnectorServiceProvider"
             ]
         }
     }
