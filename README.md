@@ -12,19 +12,19 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
  - Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
  - Give it a name and suitable description; so user will be able to know what it is related to later.
  - Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
-   - {seat-public-url}/discord-connector/oauth/callback
-   - {seat-public-url}/discord-connector/server/callback
+   - {seat-public-url}/seat-connector/registration/discord/callback
+   - {seat-public-url}/seat-connector/settings/discord/callback
  - Once done, click on the `Create app` at the bottom of the form
 
 > **NOTE**
 >
 > For example, if you have SeAT available on `seat.example.com`, the callbacks will be
->  - `https://seat.example.com/discord-connector/oauth/callback`
->  - `https://seat.example.com/discord-connector/server/callback`
+>  - `https://seat.example.com/seat-connector/registration/discord/callback`
+>  - `https://seat.example.com/seat-connector/settings/discord/callback`
 >
 > But, if you're accessing SeAT using `example.com/seat`, the callbacks will become
->  - `https://example.com/seat/discord-connector/oauth/callback`
->  - `https://example.com/seat/discord-connector/server/callback`
+>  - `https://example.com/seat/seat-connector/registration/discord/callback`
+>  - `https://example.com/seat/seat-connector/settings/discord/callback`
 
 ## Retrieving Credentials
 Once your application has been created, we will need to retrieve credentials which will be used later in order to setup the connector into SeAT.
@@ -53,7 +53,7 @@ Don't forget to restart `supervisor` with `service supervisor restart` ;)
 > They need to be run at root SeAT directory which used to be `/var/www/seat`
 
 ## Setup Package
-Authenticate yourself using admin user on your SeAT instance. If all upper statements have been executed properly, you'll seed a new section into the sidebar called `Discord Connector`.
+Authenticate yourself using admin user on your SeAT instance. If all upper statements have been executed properly, you'll seed a new section into the sidebar called `Connector`.
 
 Open it, then go into `Settings` and fill the form using collected information at the beginning of this Walkthrough.
 
@@ -66,29 +66,29 @@ In the list, select the server where the SeAT Bot have to be install, leave perm
 
 *My apologies for all that french stuff, but Discord SSO is using browser settings to show content. Despite of the language, content should be similar in all countries.*
 
-Once you've been redirected back to SeAT, you can hit the `Update Discord Roles` green button which will seed SeAT with Roles available on Discord.
+Once you've been redirected back to SeAT, you can select `Discord` and hit the `Update Sets` green button which will seed SeAT with Roles available on Discord.
 
 ## Setup Access
-To build the mapping between SeAT and Discord, go into `Discord Connector > Access Management`.
-In case you're seeing no roles in the form, go into `Discord Connector > Settings` and hit the `Update Discord Roles` button.
+To build the mapping between SeAT and Discord, go into `Connector > Access Management`.
+In case you're seeing no roles in the form, go into `Connector > Settings` and hit the `Update Discord Sets` button.
 
 In **Discord Connector**, there are 6 kind of mapping called `Filter`. Their scope are explained in the table bellow.
 
-| Filter | Description |
-| ------ | ----------- |
-| **User** | This filter is applied to specific user group (meaning all linked characters) |
-| **Role** | This filter is applied to all members of specific SeAT role (ACL) |
-| **Corporation** | This filter is applied to all user with at least one character inside a specific corporation |
-| **Title** | This filter is applied to all user with at least one character owning a specific corporation title |
-| **Alliance** | This filter is applied to all user with at least one character inside a specific alliance |
-| **Public** | This filter is applied to all user |
+| Filter          | Description                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| **User**        | This filter is applied to specific user group (meaning all linked characters)                      |
+| **Role**        | This filter is applied to all members of specific SeAT role (ACL)                                  |
+| **Corporation** | This filter is applied to all user with at least one character inside a specific corporation       |
+| **Title**       | This filter is applied to all user with at least one character owning a specific corporation title |
+| **Alliance**    | This filter is applied to all user with at least one character inside a specific alliance          |
+| **Public**      | This filter is applied to all user                                                                 |
 
 To create a filter, simply fill the form available on the left accordingly to your needs. Then, hit the `Add` button.
 At all time, you're able to check which filter are set in the table available on the right side. You can also drop mapping using the red `Remove` button near each mapping line.
 
 # Linking Account and Getting Invitation
 
-As user, you will see a section called `Discord Connector` on the sidebar. Open it and click on `Join Server`.
+As user, you will see a section called `Connector` on the sidebar. Open it and click on `Join Server`.
 
 This will redirect your to Discord SSO with a simple form informing you that the bot will be able to collect basic information (like your Discord Unique ID and Nickname), and granted to invite you on the attached Discord Server.
 

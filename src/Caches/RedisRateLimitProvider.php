@@ -72,7 +72,7 @@ class RedisRateLimitProvider
     }
 
     /**
-     * @param RequestInterface $request
+     * @param $key
      * @return string
      */
     private function getKey($key)
@@ -93,7 +93,7 @@ class RedisRateLimitProvider
     /**
      * Returns when the last request was made.
      *
-     * @param string $uri
+     * @param Uri $uri
      * @return float|null When the last request was made.
      */
     private function getLastRequestTime(Uri $uri)
