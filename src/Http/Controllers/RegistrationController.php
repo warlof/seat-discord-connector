@@ -24,6 +24,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Seat\Web\Http\Controllers\Controller;
 use SocialiteProviders\Manager\Config;
 use Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient;
+use Warlof\Seat\Connector\Events\EventLogger;
 use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
 use Warlof\Seat\Connector\Models\User;
 
@@ -100,6 +101,10 @@ class RegistrationController extends Controller
             'roles'        => $driver_user->allowedSets(),
             'access_token' => $socialite_user->token,
         ]);
+
+        event(new EventLogger('discord', 'notice', 'registration',
+            sprintf('User %s (%d) has been registered with ID %s and UID %s',
+                $driver_user->connector_name, $driver_user->group_id, $driver_user->connector_id, $driver_user->unique_id)));
 
         // send the user to the guild
         return redirect()->to(sprintf('https://discordapp.com/channels/%s', $client->getGuildId()));
