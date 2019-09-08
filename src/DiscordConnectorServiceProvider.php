@@ -22,6 +22,7 @@ namespace Warlof\Seat\Connector\Drivers\Discord;
 
 use Seat\Services\AbstractSeatPlugin;
 use SocialiteProviders\Discord\Provider;
+use Warlof\Seat\Connector\Drivers\Discord\Commands\Convert;
 
 /**
  * Class DiscordConnectorServiceProvider.
@@ -39,6 +40,7 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     {
         $this->addRoutes();
         $this->addTranslations();
+        $this->addUpgradeCommand();
     }
 
     /**
@@ -75,9 +77,22 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
         }
     }
 
+    /**
+     * Import translations
+     */
     private function addTranslations()
     {
         $this->loadTranslationsFrom(__DIR__ . '/lang', 'seat-connector-discord');
+    }
+
+    /**
+     * Import commands
+     */
+    private function addUpgradeCommand()
+    {
+        $this->commands([
+            Convert::class,
+        ]);
     }
 
     /**

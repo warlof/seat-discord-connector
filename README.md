@@ -100,6 +100,13 @@ Simply confirm using the `Authorize` button which will redirect you to the SeAT 
 
 You'll be invited automatically to the Discord Server and attached channels.
 
+# Upgrade
+
+If you're coming from a version prior to 4.x, you may want to convert your data into the new connector structure.
+To do so, run the command `seat-connector:convert:discord` - it will assist you in this process.
+
+**Callback URL have been changed, this mean you'll have to update your Discord Application.**
+
 # Known issues
 
 Here is a quick list of known issues (and their solution if applicable).
