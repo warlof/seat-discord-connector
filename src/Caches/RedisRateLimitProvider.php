@@ -1,15 +1,27 @@
 <?php
 /**
- * User: Warlof Tutsimo <loic.leuilliot@gmail.com>
- * Date: 01/07/2018
- * Time: 12:58
+ * This file is part of SeAT Discord Connector.
+ *
+ * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ *
+ * SeAT Discord Connector  is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * SeAT Discord Connector is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Caches;
 
 use GuzzleHttp\Psr7\Uri;
 use Illuminate\Support\Facades\Redis;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class RedisRateLimitProvider
