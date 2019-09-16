@@ -34,7 +34,7 @@ use Warlof\Seat\Connector\Drivers\Discord\Helpers\Helper;
 class SettingsController extends Controller
 {
     const SCOPES = [
-        'bot', 'guilds.join',
+        'bot', 'identify', 'guilds.join',
     ];
 
     const BOT_PERMISSIONS = [
