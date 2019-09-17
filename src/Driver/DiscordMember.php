@@ -101,6 +101,9 @@ class DiscordMember implements IUser
      */
     public function setName(string $name): bool
     {
+        if ($this->isOwner())
+            return false;
+
         $nickname = Str::limit($name, 32, '');
 
         DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
@@ -160,7 +163,7 @@ class DiscordMember implements IUser
      */
     public function addSet(ISet $group)
     {
-        if (in_array($group->getId(), $this->role_ids))
+        if (in_array($group->getId(), $this->role_ids) || $this->isOwner())
             return;
 
         DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
@@ -181,7 +184,7 @@ class DiscordMember implements IUser
      */
     public function removeSet(ISet $group)
     {
-        if (! in_array($group->getId(), $this->role_ids))
+        if (! in_array($group->getId(), $this->role_ids) || $this->isOwner())
             return;
 
         DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
@@ -197,5 +200,15 @@ class DiscordMember implements IUser
         if ($key !== false) {
             unset($this->role_ids[$key]);
         }
+    }
+
+    /**
+     * @return bool
+     * @throws \Seat\Services\Exceptions\SettingException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     */
+    private function isOwner(): bool
+    {
+        return $this->getClientId() === DiscordClient::getInstance()->getOwnerId();
     }
 }

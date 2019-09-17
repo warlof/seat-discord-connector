@@ -94,6 +94,7 @@ class SettingsController extends Controller
         $socialite_user = Socialite::driver('discord')->setConfig($config)->user();
 
         $settings->guild_id = $socialite_user->accessTokenResponseBody['guild']['id'];
+        $settings->owner_id = $socialite_user->accessTokenResponseBody['guild']['owner_id'];
 
         setting(['seat-connector.drivers.discord', $settings], true);
 

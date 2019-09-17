@@ -75,6 +75,11 @@ class DiscordClient implements IClient
     private $roles;
 
     /**
+     * @var string
+     */
+    private $owner_id;
+
+    /**
      * DiscordClient constructor.
      *
      * @param array $parameters
@@ -83,6 +88,7 @@ class DiscordClient implements IClient
     {
         $this->guild_id  = $parameters['guild_id'];
         $this->bot_token = $parameters['bot_token'];
+        $this->owner_id  = $parameters['owner_id'];
 
         $this->throttler = new RedisRateLimitProvider();
 
@@ -110,8 +116,9 @@ class DiscordClient implements IClient
                 throw new DriverSettingsException('Parameter bot_token is missing.');
 
             self::$instance = new DiscordClient([
-                'guild_id' => $settings->guild_id,
+                'guild_id'  => $settings->guild_id,
                 'bot_token' => $settings->bot_token,
+                'owner_id'  => property_exists($settings, 'owner_id') ? $settings->owner_id : null,
             ]);
         }
 
@@ -190,6 +197,28 @@ class DiscordClient implements IClient
     public function getGuildId(): string
     {
         return $this->guild_id;
+    }
+
+    /**
+     * @return string
+     * @throws \Seat\Services\Exceptions\SettingException
+     */
+    public function getOwnerId(): string
+    {
+        if (is_null($this->owner_id)) {
+            $guild = $this->sendCall('GET', '/guilds/{guild.id}', [
+                'guild.id' => $this->guild_id,
+            ]);
+
+            $this->owner_id = $guild['owner_id'];
+
+            $settings  = setting('seat-connector.drivers.discord', true);
+            $settings->owner_id = $this->owner_id;
+
+            setting(['seat-connector.drivers.discord', $settings], true);
+        }
+
+        return $this->owner_id;
     }
 
     /**
