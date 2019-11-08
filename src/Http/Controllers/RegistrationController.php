@@ -24,6 +24,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Seat\Web\Http\Controllers\Controller;
 use SocialiteProviders\Manager\Config;
 use Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient;
+use Warlof\Seat\Connector\Drivers\IClient;
 use Warlof\Seat\Connector\Events\EventLogger;
 use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
 use Warlof\Seat\Connector\Models\User;
@@ -84,13 +85,20 @@ class RegistrationController extends Controller
         $socialite_user = Socialite::driver('discord')->setConfig($config)->user();
 
         // update or create the connector user
+        $original_user = User::where('connector_type', 'discord')->where('group_id', auth()->user()->group_id)->first();
+
+        // if connector ID is a new one - revoke existing access on the old ID
+        if (! is_null($original_user) && $original_user->connector_id != $socialite_user->id)
+            $this->revokeOldIdentity($client, $original_user);
+
+        // spawn or update existing identity using returned information
         $driver_user = User::updateOrCreate([
             'connector_type' => 'discord',
-            'connector_id'   => $socialite_user->id,
-        ], [
-            'connector_name' => $socialite_user->nickname,
             'group_id'       => auth()->user()->group_id,
+        ], [
+            'connector_id'   => $socialite_user->id,
             'unique_id'      => $socialite_user->email,
+            'connector_name' => $socialite_user->nickname,
         ]);
 
         // invite the user to the guild using both nickname and roles
@@ -108,5 +116,26 @@ class RegistrationController extends Controller
 
         // send the user to the guild
         return redirect()->to(sprintf('https://discordapp.com/channels/%s', $client->getGuildId()));
+    }
+
+    /**
+     * @param \Warlof\Seat\Connector\Drivers\IClient $client
+     * @param \Warlof\Seat\Connector\Models\User $old_identity
+     * @throws \Seat\Services\Exceptions\SettingException
+     */
+    private function revokeOldIdentity(IClient $client, User $old_identity)
+    {
+        // revoke access from old Identity
+        $client->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
+            'guild.id'     => $client->getGuildId(),
+            'user.id'      => $old_identity->connector_id,
+            'nick'         => $old_identity->buildConnectorNickname(),
+            'roles'        => [],
+        ]);
+
+        // log action
+        event(new EventLogger('discord', 'warning', 'registration',
+            sprintf('User %s (%d) has been uncoupled from ID %s and UID %s',
+                $old_identity->connector_name, $old_identity->group_id, $old_identity->connector_id, $old_identity->unique_id)));
     }
 }
