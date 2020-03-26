@@ -20,7 +20,7 @@
 
 return [
     'name'     => 'discord',
-    'icon'     => 'fa-gamepad',
+    'icon'     => 'fab fa-discord',
     'client'   => \Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient::class,
     'settings' => [
         [

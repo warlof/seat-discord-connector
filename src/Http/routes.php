@@ -18,20 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
-Route::group([
-    'namespace' => 'Warlof\Seat\Connector\Discord\Http\Controllers\Api\v1',
-    'prefix' => 'api',
-    'middleware' => 'api.auth'
-], function() {
-    Route::group(['prefix' => 'v2'], function () {
-        Route::group(['prefix' => 'discord-connector'], function () {
-                Route::get('/mapping', 'DiscordApiController@getDiscordMappings');
-        });
-    });
-});
-*/
-
 Route::group([
     'namespace'  => 'Warlof\Seat\Connector\Drivers\Discord\Http\Controllers',
     'prefix'     => 'seat-connector',
