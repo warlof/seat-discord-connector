@@ -67,8 +67,9 @@ class RegistrationController extends Controller
 
     /**
      * @return \Illuminate\Http\RedirectResponse
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Seat\Services\Exceptions\SettingException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function handleProviderCallback()
     {
@@ -127,6 +128,7 @@ class RegistrationController extends Controller
      * @param \Warlof\Seat\Connector\Drivers\IClient $client
      * @param \Warlof\Seat\Connector\Models\User $old_identity
      * @throws \Seat\Services\Exceptions\SettingException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function revokeOldIdentity(IClient $client, User $old_identity)
     {

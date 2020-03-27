@@ -21,12 +21,18 @@
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Uri;
+use Illuminate\Support\Arr;
+use Seat\Services\Exceptions\SettingException;
 use Warlof\Seat\Connector\Drivers\IClient;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
 use Warlof\Seat\Connector\Drivers\Discord\Caches\RedisRateLimitProvider;
+use Warlof\Seat\Connector\Exceptions\DriverException;
 use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
+use Warlof\Seat\Connector\Exceptions\InvalidDriverIdentityException;
 
 /**
  * Class DiscordClient.
@@ -98,13 +104,16 @@ class DiscordClient implements IClient
 
     /**
      * @return \Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
-     * @throws \Seat\Services\Exceptions\SettingException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public static function getInstance(): IClient
     {
         if (! isset(self::$instance)) {
-            $settings  = setting('seat-connector.drivers.discord', true);
+            try {
+                $settings = setting('seat-connector.drivers.discord', true);
+            } catch (SettingException $e) {
+                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            }
 
             if (is_null($settings) || ! is_object($settings))
                 throw new DriverSettingsException('The Driver has not been configured yet.');
@@ -127,34 +136,66 @@ class DiscordClient implements IClient
 
     /**
      * @return \Warlof\Seat\Connector\Drivers\IUser[]
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getUsers(): array
     {
-        if ($this->members->isEmpty())
-            $this->seedMembers();
+        if ($this->members->isEmpty()) {
+            try {
+                $this->seedMembers();
+            } catch (GuzzleException $e) {
+                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            }
+        }
 
         return $this->members->toArray();
     }
 
     /**
      * @param string $id
-     * @return \Warlof\Seat\Connector\Drivers\IUser
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return \Warlof\Seat\Connector\Drivers\IUser|null
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getUser(string $id): ?IUser
     {
-        if ($this->members->isEmpty())
-            $this->seedMembers();
+        if ($this->members->isEmpty()) {
+            try {
+                $this->seedMembers();
+            } catch (GuzzleException $e) {
+                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            }
+        }
 
         $member = $this->members->get($id);
 
         if (is_null($member)) {
 
-            $member = $this->sendCall('GET', '/guilds/{guild.id}/members/{user.id}', [
-                'guild.id' => $this->guild_id,
-                'user.id'  => $id,
-            ]);
+            try {
+                $member = $this->sendCall('GET', '/guilds/{guild.id}/members/{user.id}', [
+                    'guild.id' => $this->guild_id,
+                    'user.id' => $id,
+                ]);
+            } catch (ClientException $e) {
+                logger()->error($e->getMessage(), $e->getTrace());
+
+                $body = $e->hasResponse() ? $e->getResponse()->getBody() : '{"code": 0}';
+                $error = json_decode($body);
+
+                switch ($error->code) {
+                    // provided Guild is not found
+                    // ref: https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
+                    case 10004:
+                        throw new DriverSettingsException(sprintf('Configured Guild ID %s is invalid.', $this->guild_id));
+                    // provided User is not found into the Guild
+                    // ref: https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
+                    case 10007:
+                        throw new InvalidDriverIdentityException(sprintf('User ID %s is not found in Guild %s', $id, $this->guild_id));
+                }
+
+                throw $e;
+            } catch (GuzzleException $e) {
+                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            }
 
             $member = new DiscordMember((array) $member);
         }
@@ -164,14 +205,17 @@ class DiscordClient implements IClient
 
     /**
      * @return \Warlof\Seat\Connector\Drivers\ISet[]
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getSets(): array
     {
-        if ($this->roles->isEmpty())
-            $this->seedRoles();
+        if ($this->roles->isEmpty()) {
+            try {
+                $this->seedRoles();
+            } catch (GuzzleException $e) {
+                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            }
+        }
 
         return $this->roles->toArray();
     }
@@ -179,14 +223,17 @@ class DiscordClient implements IClient
     /**
      * @param string $id
      * @return \Warlof\Seat\Connector\Drivers\ISet|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getSet(string $id): ?ISet
     {
-        if ($this->roles->isEmpty())
-            $this->seedRoles();
+        if ($this->roles->isEmpty()) {
+            try {
+                $this->seedRoles();
+            } catch (GuzzleException $e) {
+                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            }
+        }
 
         return $this->roles->get($id);
     }
@@ -201,6 +248,7 @@ class DiscordClient implements IClient
 
     /**
      * @return string
+     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Seat\Services\Exceptions\SettingException
      */
     public function getOwnerId(): string
@@ -237,7 +285,7 @@ class DiscordClient implements IClient
                 continue;
 
             $uri = str_replace(sprintf('{%s}', $uri_parameter), $value, $uri);
-            array_pull($arguments, $uri_parameter);
+            Arr::pull($arguments, $uri_parameter);
         }
 
         if (is_null($this->client))
@@ -316,8 +364,7 @@ class DiscordClient implements IClient
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     private function seedRoles()
     {

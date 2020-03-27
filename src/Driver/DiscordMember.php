@@ -20,9 +20,12 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Str;
+use Seat\Services\Exceptions\SettingException;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
+use Warlof\Seat\Connector\Exceptions\DriverException;
 
 /**
  * Class DiscordMember.
@@ -95,22 +98,31 @@ class DiscordMember implements IUser
     /**
      * @param string $name
      * @return bool
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function setName(string $name): bool
     {
-        if ($this->isOwner())
-            return false;
+        try {
+            if ($this->isOwner())
+                return false;
+        } catch (SettingException | GuzzleException $e) {
+            throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+        }
 
         $nickname = Str::limit($name, 32, '');
 
-        DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'user.id'  => $this->id,
-            'nick'     => $nickname,
-        ]);
+        try {
+            DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'user.id' => $this->id,
+                'nick' => $nickname,
+            ]);
+        } catch (GuzzleException $e) {
+            throw new DriverException(
+                sprintf('Unable to change user name from %s to %s.', $this->getName(), $name),
+                0,
+                $e->getPrevious());
+        }
 
         $this->nick = $nickname;
 
@@ -119,9 +131,7 @@ class DiscordMember implements IUser
 
     /**
      * @return \Warlof\Seat\Connector\Drivers\ISet[]
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getSets(): array
     {
@@ -157,55 +167,66 @@ class DiscordMember implements IUser
 
     /**
      * @param \Warlof\Seat\Connector\Drivers\ISet $group
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function addSet(ISet $group)
     {
-        if (in_array($group->getId(), $this->role_ids) || $this->isOwner())
-            return;
+        try {
+            if (in_array($group->getId(), $this->role_ids) || $this->isOwner())
+                return;
 
-        DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'role.id'  => $group->getId(),
-            'user.id'  => $this->id,
-        ]);
+            DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'role.id' => $group->getId(),
+                'user.id' => $this->id,
+            ]);
 
-        $this->role_ids[] = $group->getId();
-        $this->roles->put($group->getId(), $group);
+            $this->role_ids[] = $group->getId();
+            $this->roles->put($group->getId(), $group);
+        } catch (SettingException | GuzzleException $e) {
+            throw new DriverException(
+                sprintf('Unable to add set %s to the user %s.', $group->getName(), $this->getName()),
+                0,
+                $e->getPrevious());
+        }
     }
 
     /**
      * @param \Warlof\Seat\Connector\Drivers\ISet $group
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function removeSet(ISet $group)
     {
-        if (! in_array($group->getId(), $this->role_ids) || $this->isOwner())
-            return;
+        try {
+            if (! in_array($group->getId(), $this->role_ids) || $this->isOwner())
+                return;
 
-        DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'role.id'  => $group->getId(),
-            'user.id'  => $this->id,
-        ]);
+            DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'role.id'  => $group->getId(),
+                'user.id'  => $this->id,
+            ]);
 
-        $this->roles->pull($group->getId());
+            $this->roles->pull($group->getId());
 
-        $key = array_search($group->getId(), $this->role_ids);
+            $key = array_search($group->getId(), $this->role_ids);
 
-        if ($key !== false) {
-            unset($this->role_ids[$key]);
+            if ($key !== false) {
+                unset($this->role_ids[$key]);
+            }
+        } catch (SettingException | GuzzleException $e) {
+            throw new DriverException(
+                sprintf('Unable to remove set %s from the user %s.', $group->getName(), $this->getName()),
+                0,
+                $e->getPrevious());
         }
     }
 
     /**
      * @return bool
+     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     private function isOwner(): bool
     {
