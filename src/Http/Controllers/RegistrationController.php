@@ -20,6 +20,7 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Http\Controllers;
 
+use GuzzleHttp\Exception\ClientException;
 use Laravel\Socialite\Facades\Socialite;
 use Seat\Web\Http\Controllers\Controller;
 use SocialiteProviders\Manager\Config;
@@ -132,17 +133,32 @@ class RegistrationController extends Controller
      */
     private function revokeOldIdentity(IClient $client, User $old_identity)
     {
-        // revoke access from old Identity
-        $client->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
-            'guild.id'     => $client->getGuildId(),
-            'user.id'      => $old_identity->connector_id,
-            'nick'         => $old_identity->buildConnectorNickname(),
-            'roles'        => [],
-        ]);
+        try {
+            // revoke access from old Identity
+            $client->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
+                'guild.id' => $client->getGuildId(),
+                'user.id' => $old_identity->connector_id,
+                'nick' => $old_identity->buildConnectorNickname(),
+                'roles' => [],
+            ]);
 
-        // log action
-        event(new EventLogger('discord', 'warning', 'registration',
-            sprintf('User %s (%d) has been uncoupled from ID %s and UID %s',
-                $old_identity->connector_name, $old_identity->user_id, $old_identity->connector_id, $old_identity->unique_id)));
+            // log action
+            event(new EventLogger('discord', 'warning', 'registration',
+                sprintf('User %s (%d) has been uncoupled from ID %s and UID %s',
+                    $old_identity->connector_name, $old_identity->user_id, $old_identity->connector_id, $old_identity->unique_id)));
+        } catch (ClientException $e) {
+            $body = $e->hasResponse() ? $e->getResponse()->getBody() : '{"code": 0}';
+            $error = json_decode($body);
+
+            if ($error->code == 10004) {
+                event(new EventLogger('discord', 'warning', 'registration',
+                    sprintf('User %s (%d) has been uncoupled from ID %s and UID %s',
+                        $old_identity->connector_name, $old_identity->user_id, $old_identity->connector_id, $old_identity->unique_id)));
+
+                return;
+            }
+
+            throw $e;
+        }
     }
 }
