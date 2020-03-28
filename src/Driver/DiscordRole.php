@@ -110,7 +110,7 @@ class DiscordRole implements ISet
             throw new DriverException(
                 sprintf('Unable to add user %s as a member of set %s.', $user->getName(), $this->getName()),
                 0,
-                $e->getPrevious());
+                $e);
         }
 
         $this->members->put($user->getClientId(), $user);
@@ -132,10 +132,11 @@ class DiscordRole implements ISet
                 'user.id' => $user->getClientId(),
             ]);
         } catch (GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
             throw new DriverException(
                 sprintf('Unable to remove user %s from set %s.', $user->getName(), $this->getName()),
                 0,
-                $e->getPrevious());
+                $e);
         }
 
         $this->members->pull($user->getClientId());

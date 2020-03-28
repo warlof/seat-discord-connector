@@ -23,13 +23,13 @@ namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\HandlerStack;
 use Illuminate\Support\Arr;
 use Seat\Services\Exceptions\SettingException;
+use Warlof\Seat\Connector\Drivers\Discord\Http\Middleware\Throttlers\RateLimiterMiddleware;
 use Warlof\Seat\Connector\Drivers\IClient;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
-use Warlof\Seat\Connector\Drivers\Discord\Caches\RedisRateLimitProvider;
 use Warlof\Seat\Connector\Exceptions\DriverException;
 use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
 use Warlof\Seat\Connector\Exceptions\InvalidDriverIdentityException;
@@ -54,11 +54,6 @@ class DiscordClient implements IClient
      * @var \GuzzleHttp\Client
      */
     private $client;
-
-    /**
-     * @var \Warlof\Seat\Connector\Drivers\Discord\Caches\RedisRateLimitProvider
-     */
-    private $throttler;
 
     /**
      * @var string
@@ -96,8 +91,6 @@ class DiscordClient implements IClient
         $this->bot_token = $parameters['bot_token'];
         $this->owner_id  = $parameters['owner_id'];
 
-        $this->throttler = new RedisRateLimitProvider();
-
         $this->members = collect();
         $this->roles   = collect();
     }
@@ -112,7 +105,7 @@ class DiscordClient implements IClient
             try {
                 $settings = setting('seat-connector.drivers.discord', true);
             } catch (SettingException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
 
             if (is_null($settings) || ! is_object($settings))
@@ -144,7 +137,7 @@ class DiscordClient implements IClient
             try {
                 $this->seedMembers();
             } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
         }
 
@@ -162,7 +155,7 @@ class DiscordClient implements IClient
             try {
                 $this->seedMembers();
             } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
         }
 
@@ -194,7 +187,7 @@ class DiscordClient implements IClient
 
                 throw $e;
             } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
 
             $member = new DiscordMember((array) $member);
@@ -213,7 +206,7 @@ class DiscordClient implements IClient
             try {
                 $this->seedRoles();
             } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
         }
 
@@ -231,7 +224,7 @@ class DiscordClient implements IClient
             try {
                 $this->seedRoles();
             } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
         }
 
@@ -288,24 +281,20 @@ class DiscordClient implements IClient
             Arr::pull($arguments, $uri_parameter);
         }
 
-        if (is_null($this->client))
+        if (is_null($this->client)) {
+            $stack = HandlerStack::create();
+            $stack->push(new RateLimiterMiddleware());
+
             $this->client = new Client([
                 'base_uri' => sprintf('%s/%s', rtrim(self::BASE_URI, '/'), self::VERSION),
                 'headers' => [
                     'Authorization' => sprintf('Bot %s', $this->bot_token),
-                    'Content-Type'  => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'User-Agent' => sprintf('warlof@seat-discord-connector/%s GitHub SeAT', config('discord-connector.config.version')),
                 ],
+                'handler' => $stack,
             ]);
-
-        $sleep = $this->throttler->getRequestAllowance(new Uri($uri));
-
-        if ($sleep > 0) {
-            logger()->debug(
-                sprintf('[seat-connector][discord] Request to /%s has been delayed by %d seconds', $uri, $sleep));
-            sleep($sleep);
         }
-
-        $this->throttler->setLastRequestTime(new Uri($uri));
 
         if ($method == 'GET') {
             $response = $this->client->request($method, $uri, [
@@ -321,8 +310,6 @@ class DiscordClient implements IClient
             sprintf('[seat-connector][discord] [http %d, %s] %s -> /%s',
                 $response->getStatusCode(), $response->getReasonPhrase(), $method, $uri)
         );
-
-        $this->throttler->setRequestAllowance(new Uri($uri), $response);
 
         return json_decode($response->getBody(), true);
     }

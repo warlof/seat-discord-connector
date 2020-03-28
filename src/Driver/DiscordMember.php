@@ -106,7 +106,8 @@ class DiscordMember implements IUser
             if ($this->isOwner())
                 return false;
         } catch (SettingException | GuzzleException $e) {
-            throw new DriverException($e->getMessage(), $e->getCode(), $e->getPrevious());
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
         }
 
         $nickname = Str::limit($name, 32, '');
@@ -118,10 +119,11 @@ class DiscordMember implements IUser
                 'nick' => $nickname,
             ]);
         } catch (GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
             throw new DriverException(
                 sprintf('Unable to change user name from %s to %s.', $this->getName(), $name),
                 0,
-                $e->getPrevious());
+                $e);
         }
 
         $this->nick = $nickname;
@@ -187,7 +189,7 @@ class DiscordMember implements IUser
             throw new DriverException(
                 sprintf('Unable to add set %s to the user %s.', $group->getName(), $this->getName()),
                 0,
-                $e->getPrevious());
+                $e);
         }
     }
 
@@ -215,10 +217,11 @@ class DiscordMember implements IUser
                 unset($this->role_ids[$key]);
             }
         } catch (SettingException | GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
             throw new DriverException(
                 sprintf('Unable to remove set %s from the user %s.', $group->getName(), $this->getName()),
                 0,
-                $e->getPrevious());
+                $e);
         }
     }
 

@@ -147,6 +147,8 @@ class RegistrationController extends Controller
                 sprintf('User %s (%d) has been uncoupled from ID %s and UID %s',
                     $old_identity->connector_name, $old_identity->user_id, $old_identity->connector_id, $old_identity->unique_id)));
         } catch (ClientException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
+
             $body = $e->hasResponse() ? $e->getResponse()->getBody() : '{"code": 0}';
             $error = json_decode($body);
 
