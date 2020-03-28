@@ -2,7 +2,7 @@
 /**
  * This file is part of SeAT Discord Connector.
  *
- * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ * Copyright (C) 2019, 2020  Warlof Tutsimo <loic.leuilliot@gmail.com>
  *
  * SeAT Discord Connector  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
