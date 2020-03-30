@@ -6,44 +6,44 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
 [![Maintainability](https://api.codeclimate.com/v1/badges/04e249a4704e895a08fa/maintainability)](https://codeclimate.com/github/warlof/seat-discord-connector/maintainability)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square)](https://raw.githubusercontent.com/warlof/seat-discord-connector/master/LICENSE)
 
-# Setup
+## Setup
 
-## Create Application
- - Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
- - Give it a name and suitable description; so user will be able to know what it is related to later.
- - Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
-   - {seat-public-url}/seat-connector/registration/discord/callback
-   - {seat-public-url}/seat-connector/settings/discord/callback
- - Once done, click on the `Create app` at the bottom of the form
+### Create Application
+-  Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
+-  Give it a name and suitable description; so user will be able to know what it is related to later.
+-  Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
+   -  {seat-public-url}/seat-connector/registration/discord/callback
+   -  {seat-public-url}/seat-connector/settings/discord/callback
+-  Once done, click on the `Create app` at the bottom of the form
 
 > **NOTE**
 >
 > For example, if you have SeAT available on `seat.example.com`, the callbacks will be
->  - `https://seat.example.com/seat-connector/registration/discord/callback`
->  - `https://seat.example.com/seat-connector/settings/discord/callback`
+> -  `https://seat.example.com/seat-connector/registration/discord/callback`
+> -  `https://seat.example.com/seat-connector/settings/discord/callback`
 >
 > But, if you're accessing SeAT using `example.com/seat`, the callbacks will become
->  - `https://example.com/seat/seat-connector/registration/discord/callback`
->  - `https://example.com/seat/seat-connector/settings/discord/callback`
+> -  `https://example.com/seat/seat-connector/registration/discord/callback`
+> -  `https://example.com/seat/seat-connector/settings/discord/callback`
 
-## Retrieving Credentials
+### Retrieving Credentials
 Once your application has been created, we will need to retrieve credentials which will be used later in order to setup the connector into SeAT.
 
 Go on the [following url](https://discordapp.com/developers/applications/me) and click on the box which is matching to the previously created application.
 
 Take a note of the following information available in the upper top section :
-- `Client ID` which is a displayed number
-- `Client Secret` which is a strange text (hit on `click here to reveal` link)
+-  `Client ID` which is a displayed number
+-  `Client Secret` which is a strange text (hit on `click here to reveal` link)
 
 Go at the footer section called `Bot` and check `Require OAuth2 access code` then confirm change using `Register modification` button at the bottom of the page.
 Finally, retrieve the bot token by clicking on the `Click here to reveal` link.
 
-## Install Package
+### Install Package
 Since SeAT 3.0 - it's become super easy to install package. Just require `warlof/seat-discord-connector`, publish vendor and run migrations scripts :)
 
-- Firstly, run the following command `composer require warlof/seat-discord-connector restcord/restcord:dev-develop`
-- Then, publish vendors `php artisan vendor:publish --force` (this will show you a prompt - input the number related to the following line `Warlof\Seat\Connector\Discord\DiscordConnectorServiceProvider`)
-- Finally, run migrations scripts with `php artisan migrate`
+-  Firstly, run the following command `composer require warlof/seat-discord-connector restcord/restcord:dev-develop`
+-  Then, publish vendors `php artisan vendor:publish --force` (this will show you a prompt - input the number related to the following line `Warlof\Seat\Connector\Discord\DiscordConnectorServiceProvider`)
+-  Finally, run migrations scripts with `php artisan migrate`
 
 Don't forget to restart `supervisor` with `service supervisor restart` ;)
 
@@ -52,11 +52,10 @@ Don't forget to restart `supervisor` with `service supervisor restart` ;)
 > All upper command have to be run using the SeAT instance user `www-data`, `seat` or whatever you've done with your installation.
 > They need to be run at root SeAT directory which used to be `/var/www/seat`
 
-## Setup Package
+### Setup Package
 Authenticate yourself using admin user on your SeAT instance. If all upper statements have been executed properly, you'll seed a new section into the sidebar called `Connector`.
 
 Open it, then go into `Settings` and fill the form using collected information at the beginning of this Walkthrough.
-
 
 Confirm using the `Update` button which will redirect you to Discord SSO.
 
@@ -68,7 +67,7 @@ In the list, select the server where the SeAT Bot have to be install, leave perm
 
 Once you've been redirected back to SeAT, you can select `Discord` and hit the `Update Sets` green button which will seed SeAT with Roles available on Discord.
 
-## Setup Access
+### Setup Access
 To build the mapping between SeAT and Discord, go into `Connector > Access Management`.
 In case you're seeing no roles in the form, go into `Connector > Settings` and hit the `Update Discord Sets` button.
 
@@ -86,7 +85,7 @@ In **Discord Connector**, there are 6 kind of mapping called `Filter`. Their sco
 To create a filter, simply fill the form available on the left accordingly to your needs. Then, hit the `Add` button.
 At all time, you're able to check which filter are set in the table available on the right side. You can also drop mapping using the red `Remove` button near each mapping line.
 
-# Linking Account and Getting Invitation
+## Linking Account and Getting Invitation
 
 As user, you will see a section called `Connector` on the sidebar. Open it and click on `Join Server`.
 
@@ -96,22 +95,20 @@ Simply confirm using the `Authorize` button which will redirect you to the SeAT 
 
 ![discord link](./docs/img/connector-join.png)
 
-*My apologies for all that french stuff, but Discord SSO is using browser settings to show content. Despite of the language, content should be similar in all countries.*
-
 You'll be invited automatically to the Discord Server and attached channels.
 
-# Upgrade
+## Upgrade
 
 If you're coming from a version prior to 4.x, you may want to convert your data into the new connector structure.
 To do so, run the command `seat-connector:convert:discord` - it will assist you in this process.
 
 **Callback URL have been changed, this mean you'll have to update your Discord Application.**
 
-# Known issues
+## Known issues
 
 Here is a quick list of known issues (and their solution if applicable).
 Purpose is to assist you in troubleshooting and lead to a resolution path.
 
-| Problem | Solution |
-|---------|----------|
+| Problem                                                                                                                                                                                      | Solution                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | My job `MemberOrchestrator` is failing with the message `Client error: PATCH https://discordapp.com/api/v6/guilds/302770933452636161/members/353886200135942144 resulted in a 403 FORBIDDEN` | Ensure the bot role is at top level of your roles list (use drag and drop to sort them) |
