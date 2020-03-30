@@ -12,8 +12,8 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
 - Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
 - Give it a name and suitable description; so user will be able to know what it is related to later.
 - Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
-    - {seat-public-url}/seat-connector/registration/discord/callback
-    - {seat-public-url}/seat-connector/settings/discord/callback
+  - {seat-public-url}/seat-connector/registration/discord/callback
+  - {seat-public-url}/seat-connector/settings/discord/callback
 - Once done, click on the `Create app` at the bottom of the form
 
 > **NOTE**
