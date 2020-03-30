@@ -9,22 +9,22 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
 ## Setup
 
 ### Create Application
--  Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
--  Give it a name and suitable description; so user will be able to know what it is related to later.
--  Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
-   -  {seat-public-url}/seat-connector/registration/discord/callback
-   -  {seat-public-url}/seat-connector/settings/discord/callback
--  Once done, click on the `Create app` at the bottom of the form
+- Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
+- Give it a name and suitable description; so user will be able to know what it is related to later.
+- Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
+    - {seat-public-url}/seat-connector/registration/discord/callback
+    - {seat-public-url}/seat-connector/settings/discord/callback
+- Once done, click on the `Create app` at the bottom of the form
 
 > **NOTE**
 >
 > For example, if you have SeAT available on `seat.example.com`, the callbacks will be
-> -  `https://seat.example.com/seat-connector/registration/discord/callback`
-> -  `https://seat.example.com/seat-connector/settings/discord/callback`
+> - `https://seat.example.com/seat-connector/registration/discord/callback`
+> - `https://seat.example.com/seat-connector/settings/discord/callback`
 >
 > But, if you're accessing SeAT using `example.com/seat`, the callbacks will become
-> -  `https://example.com/seat/seat-connector/registration/discord/callback`
-> -  `https://example.com/seat/seat-connector/settings/discord/callback`
+> - `https://example.com/seat/seat-connector/registration/discord/callback`
+> - `https://example.com/seat/seat-connector/settings/discord/callback`
 
 ### Retrieving Credentials
 Once your application has been created, we will need to retrieve credentials which will be used later in order to setup the connector into SeAT.
@@ -32,8 +32,8 @@ Once your application has been created, we will need to retrieve credentials whi
 Go on the [following url](https://discordapp.com/developers/applications/me) and click on the box which is matching to the previously created application.
 
 Take a note of the following information available in the upper top section :
--  `Client ID` which is a displayed number
--  `Client Secret` which is a strange text (hit on `click here to reveal` link)
+- `Client ID` which is a displayed number
+- `Client Secret` which is a strange text (hit on `click here to reveal` link)
 
 Go at the footer section called `Bot` and check `Require OAuth2 access code` then confirm change using `Register modification` button at the bottom of the page.
 Finally, retrieve the bot token by clicking on the `Click here to reveal` link.
@@ -41,9 +41,9 @@ Finally, retrieve the bot token by clicking on the `Click here to reveal` link.
 ### Install Package
 Since SeAT 3.0 - it's become super easy to install package. Just require `warlof/seat-discord-connector`, publish vendor and run migrations scripts :)
 
--  Firstly, run the following command `composer require warlof/seat-discord-connector restcord/restcord:dev-develop`
--  Then, publish vendors `php artisan vendor:publish --force` (this will show you a prompt - input the number related to the following line `Warlof\Seat\Connector\Discord\DiscordConnectorServiceProvider`)
--  Finally, run migrations scripts with `php artisan migrate`
+- Firstly, run the following command `composer require warlof/seat-discord-connector restcord/restcord:dev-develop`
+- Then, publish vendors `php artisan vendor:publish --force` (this will show you a prompt - input the number related to the following line `Warlof\Seat\Connector\Discord\DiscordConnectorServiceProvider`)
+- Finally, run migrations scripts with `php artisan migrate`
 
 Don't forget to restart `supervisor` with `service supervisor restart` ;)
 
