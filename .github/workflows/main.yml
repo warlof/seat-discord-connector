@@ -3,11 +3,13 @@ name: codacy-coverage-reporter
 on:
   push:
     branches: [ 5.0.x ]
+  pull_request:
+    branches: [ 5.0.x ]
 
 jobs:
-  codacy-coverage-reporter:
+  tests:
     runs-on: ubuntu-latest
-    name: codacy-coverage-reporter
+    name: tests
     steps:
       - uses: actions/checkout@master
       - name: Init PHP Environment
