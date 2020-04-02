@@ -15,15 +15,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install curl zip openssl
           sudo apt-get install php-cli php-common php-redis php-curl php-zip php-mbstring php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-igbinary
+          sudo apt-get install composer
           php -r "phpinfo();"
       - name: Download Code Climate Reporter
         run: |
           wget https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
           chmod +x test-reporter-latest-linux-amd64
       - name: Update dependencies
-        uses: php-actions/composer@v1
-        with:
-          command: update
+        run: |
+          composer self-update
+          composer update
+        env:
+          COMPOSER_MEMORY_LIMIT: -1
       - name: Prepare Reporter
         run: ./test-reporter-latest-linux-amd64 before-build
       - name: Run Unit Tests
