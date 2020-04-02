@@ -12,9 +12,9 @@ jobs:
       - uses: actions/checkout@master
       - name: Init PHP Environment
         run: |
-          apt-get update
-          apt-get install curl zip openssl
-          apt-get install php-cli php-redis php-curl php-zip php-mbstring php-dom php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-phar php-igbinary
+          sudo apt-get update
+          sudo apt-get install curl zip openssl
+          sudo apt-get install php-cli php-redis php-curl php-zip php-mbstring php-dom php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-phar php-igbinary
       - name: Download Code Climate Reporter
         run: |
           wget https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
