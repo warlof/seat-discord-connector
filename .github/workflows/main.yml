@@ -10,6 +10,25 @@ jobs:
     name: codacy-coverage-reporter
     steps:
       - uses: actions/checkout@master
+      - name: Init PHP Environment
+        run: |
+          - apt-get update
+          - apt-get install curl zip openssl
+          - apt-get install php-cli php-redis php-curl php-zip php-mbstring php-dom php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-phar php-igbinary
+      - name: Download Code Climate Reporter
+        run: |
+          - wget https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
+          - chmod +x test-reporter-latest-linux-amd64
+      - name: Update dependencies
+        uses: php-actions/composer@v1
+        with:
+          command: update
+      - name: Prepare Reporter
+        run: ./test-reporter-latest-linux-amd64 before-build
+      - name: Run Unit Tests
+        run: ./vendor/bin/phpunit
+      - name: Send report to Code Climate
+        run: ./test-reporter-latest-linux-amd64 after-build -t clover -r ${{ secrets.CC_REPORTER_ID }}
       - name: Run codacy-coverage-reporter
         uses: mrfyda/codacy-coverage-reporter-action@master
         with:
