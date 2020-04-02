@@ -1,0 +1,42 @@
+[
+  {
+    "id": "41771983423143936",
+    "name": "WE DEM BOYZZ!!!!!!",
+    "color": 3447003,
+    "hoist": true,
+    "position": 1,
+    "permissions": 66321471,
+    "managed": false,
+    "mentionable": false
+  },
+  {
+    "id": "41771983423143937",
+    "name": "TEST ROLE",
+    "color": 3447003,
+    "hoist": true,
+    "position": 1,
+    "permissions": 66321471,
+    "managed": false,
+    "mentionable": false
+  },
+  {
+    "id": "41771983423143938",
+    "name": "MANAGED ROLE",
+    "color": 3447003,
+    "hoist": true,
+    "position": 1,
+    "permissions": 66321471,
+    "managed": true,
+    "mentionable": false
+  },
+  {
+    "id": "41771983423143939",
+    "name": "ANOTHER ROLE",
+    "color": 3447003,
+    "hoist": true,
+    "position": 1,
+    "permissions": 66321471,
+    "managed": false,
+    "mentionable": false
+  }
+]

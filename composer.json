@@ -7,10 +7,18 @@
             "Warlof\\Seat\\Connector\\Drivers\\Discord\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Warlof\\Seat\\Connector\\Drivers\\Discord\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "ext-json": "*",
         "warlof/seat-connector": "^2.0",
         "socialiteproviders/discord": "v2.0.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^4.0"
     },
     "license": "GPL-3.0-or-later",
     "authors": [

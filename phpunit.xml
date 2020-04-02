@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/5.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         backupGlobals="false"
+         beStrictAboutCoversAnnotation="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         verbose="true">
+
+    <testsuites>
+        <testsuite name="Warlof\Seat\Connector\Drivers\Discord Test Suite">
+            <directory suffix="Test.php">./tests/</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">src</directory>
+        </whitelist>
+    </filter>
+
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml" />
+    </logging>
+</phpunit>

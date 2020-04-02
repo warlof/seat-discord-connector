@@ -1,0 +1,71 @@
+[
+  {
+    "user": {
+      "id": "80351110224678912",
+      "username": "Nelly",
+      "discriminator": "1337",
+      "avatar": "8342729096ea3675442027381ff50dfe",
+      "verified": true,
+      "email": "nelly@discordapp.com",
+      "flags": 64,
+      "premium_type": 1
+    },
+    "nick": "Member 1",
+    "roles": [],
+    "joined_at": "2015-04-26T06:26:56.936000+00:00",
+    "deaf": false,
+    "mute": false
+  },
+  {
+    "user": {
+      "id": "80351110224678913",
+      "username": "Mike",
+      "discriminator": "1337",
+      "avatar": "8342729096ea3675442027381ff50dfe",
+      "verified": true,
+      "email": "nelly@discordapp.com",
+      "flags": 64,
+      "premium_type": 1
+    },
+    "nick": "Member 2",
+    "roles": [],
+    "joined_at": "2015-04-26T06:26:56.936000+00:00",
+    "deaf": false,
+    "mute": false
+  },
+  {
+    "user": {
+      "id": "80355410224678913",
+      "username": "I am a Bot",
+      "discriminator": "1337",
+      "avatar": "8342729096ea3675442027381ff50dfe",
+      "verified": true,
+      "email": "nelly@discordapp.com",
+      "flags": 64,
+      "premium_type": 1,
+      "bot": true
+    },
+    "nick": "I am a Bot",
+    "roles": [],
+    "joined_at": "2015-04-26T06:26:56.936000+00:00",
+    "deaf": false,
+    "mute": false
+  },
+  {
+    "user": {
+      "id": "80351110224678914",
+      "username": "Clarke",
+      "discriminator": "1337",
+      "avatar": "8342729096ea3675442027381ff50dfe",
+      "verified": true,
+      "email": "nelly@discordapp.com",
+      "flags": 64,
+      "premium_type": 1
+    },
+    "nick": "Member 3",
+    "roles": [],
+    "joined_at": "2015-04-26T06:26:56.936000+00:00",
+    "deaf": false,
+    "mute": false
+  }
+]
