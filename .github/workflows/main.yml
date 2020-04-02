@@ -22,9 +22,7 @@ jobs:
           wget https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
           chmod +x test-reporter-latest-linux-amd64
       - name: Update dependencies
-        run: |
-          composer self-update
-          composer update
+        run: composer update
         env:
           COMPOSER_MEMORY_LIMIT: -1
       - name: Prepare Reporter
