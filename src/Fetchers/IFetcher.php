@@ -19,10 +19,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * TODO: lazy coder, remember to edit this file before TAG ! DAMMIT !
+namespace Warlof\Seat\Connector\Drivers\Discord\Fetchers;
+
+use Psr\Http\Message\ResponseInterface;
+
+/**
+ * Interface IFetcher.
+ *
+ * @package Warlof\Seat\Connector\Drivers\Discord\Fetchers
  */
-return [
-    'fetcher' => \Warlof\Seat\Connector\Drivers\Discord\Fetchers\GuzzleFetcher::class,
-    'version' => '5.0.0',
-];
+interface IFetcher
+{
+    /**
+     * IFetcher constructor.
+     *
+     * @param string $base_uri
+     * @param string $token
+     */
+    public function __construct(string $base_uri, string $token);
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function request(string $method, string $uri = '', array $options = []): ResponseInterface;
+}

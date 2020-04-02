@@ -21,13 +21,10 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\HandlerStack;
 use Illuminate\Support\Arr;
 use Seat\Services\Exceptions\SettingException;
-use Warlof\Seat\Connector\Drivers\Discord\Http\Middleware\Throttlers\RateLimiterMiddleware;
 use Warlof\Seat\Connector\Drivers\IClient;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
@@ -94,6 +91,10 @@ class DiscordClient implements IClient
 
         $this->members = collect();
         $this->roles   = collect();
+
+        $fetcher = config('discord-connector.config.fetcher');
+        $base_uri = sprintf('%s/%s', rtrim(self::BASE_URI, '/'), self::VERSION);
+        $this->client = new $fetcher($base_uri, $this->bot_token);
     }
 
     /**
@@ -129,6 +130,14 @@ class DiscordClient implements IClient
     }
 
     /**
+     * Reset the instance
+     */
+    public static function tearDown()
+    {
+        self::$instance = null;
+    }
+
+    /**
      * @return \Warlof\Seat\Connector\Drivers\IUser[]
      * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
@@ -152,29 +161,22 @@ class DiscordClient implements IClient
      */
     public function getUser(string $id): ?IUser
     {
-        if ($this->members->isEmpty()) {
-            try {
-                $this->seedMembers();
-            } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e);
-            }
-        }
-
         $member = $this->members->get($id);
 
-        if (is_null($member)) {
+        if (! is_null($member))
+            return $member;
 
-            try {
-                $member = $this->sendCall('GET', '/guilds/{guild.id}/members/{user.id}', [
-                    'guild.id' => $this->guild_id,
-                    'user.id' => $id,
-                ]);
-            } catch (ClientException $e) {
-                logger()->error($e->getMessage(), $e->getTrace());
+        try {
+            $member = $this->sendCall('GET', '/guilds/{guild.id}/members/{user.id}', [
+                'guild.id' => $this->guild_id,
+                'user.id' => $id,
+            ]);
+        } catch (ClientException $e) {
+            logger()->error($e->getMessage(), $e->getTrace());
 
-                $body = $e->hasResponse() ? $e->getResponse()->getBody() : '{"code": 0}';
-                $error = json_decode($body);
+            $error = json_decode($e->getResponse()->getBody());
 
+            if (! is_null($error) && property_exists($error, 'code')) {
                 switch ($error->code) {
                     // provided Guild is not found
                     // ref: https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
@@ -183,16 +185,17 @@ class DiscordClient implements IClient
                     // provided User is not found into the Guild
                     // ref: https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
                     case 10007:
-                        throw new InvalidDriverIdentityException(sprintf('User ID %s is not found in Guild %s', $id, $this->guild_id));
+                        throw new InvalidDriverIdentityException(sprintf('User ID %s is not found in Guild %s.', $id, $this->guild_id));
                 }
-
-                throw $e;
-            } catch (GuzzleException $e) {
-                throw new DriverException($e->getMessage(), $e->getCode(), $e);
             }
 
-            $member = new DiscordMember((array) $member);
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
+        } catch (GuzzleException $e) {
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
         }
+
+        $member = new DiscordMember((array) $member);
+        $this->members->put($member->getClientId(), $member);
 
         return $member;
     }
@@ -280,21 +283,6 @@ class DiscordClient implements IClient
 
             $uri = str_replace(sprintf('{%s}', $uri_parameter), $value, $uri);
             Arr::pull($arguments, $uri_parameter);
-        }
-
-        if (is_null($this->client)) {
-            $stack = HandlerStack::create();
-            $stack->push(new RateLimiterMiddleware());
-
-            $this->client = new Client([
-                'base_uri' => sprintf('%s/%s', rtrim(self::BASE_URI, '/'), self::VERSION),
-                'headers' => [
-                    'Authorization' => sprintf('Bot %s', $this->bot_token),
-                    'Content-Type' => 'application/json',
-                    'User-Agent' => sprintf('warlof@seat-discord-connector/%s GitHub SeAT', config('discord-connector.config.version')),
-                ],
-                'handler' => $stack,
-            ]);
         }
 
         if ($method == 'GET') {
