@@ -1,4 +1,4 @@
-name: codacy-coverage-reporter
+name: tests
 
 on:
   push:
@@ -7,9 +7,9 @@ on:
     branches: [ 5.0.x ]
 
 jobs:
-  tests:
+  code-climate:
     runs-on: ubuntu-latest
-    name: tests
+    name: Code Climate Tests Coverage
     steps:
       - uses: actions/checkout@master
       - name: Init PHP Environment
@@ -33,6 +33,24 @@ jobs:
         run: ./vendor/bin/phpunit
       - name: Send report to Code Climate
         run: ./test-reporter-latest-linux-amd64 after-build -t clover -r ${{ secrets.CC_REPORTER_ID }}
+  codacy:
+    runs-on: ubuntu-latest
+    name: Codacy Tests Coverage
+    steps:
+      - uses: actions/checkout@master
+      - name: Init PHP Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install curl zip openssl
+          sudo apt-get install php-cli php-common php-redis php-curl php-zip php-mbstring php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-igbinary
+          sudo apt-get install composer
+          php -r "phpinfo();"
+      - name: Update dependencies
+        run: composer update
+        env:
+          COMPOSER_MEMORY_LIMIT: -1
+      - name: Run Unit Tests
+        run: ./vendor/bin/phpunit
       - name: Run codacy-coverage-reporter
         uses: mrfyda/codacy-coverage-reporter-action@master
         with:
