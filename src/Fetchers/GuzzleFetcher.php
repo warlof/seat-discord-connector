@@ -52,7 +52,7 @@ class GuzzleFetcher implements IFetcher
         $this->client = new Client([
             'base_uri' => $base_uri,
             'headers' => [
-                'Authorization' => $token,
+                'Authorization' => sprintf('Bot %s', $token),
                 'Content-Type' => 'application/json',
                 'User-Agent' => sprintf('warlof@seat-discord-connector/%s GitHub SeAT', config('discord-connector.config.version')),
             ],
