@@ -2,6 +2,8 @@
     "name": "warlof/seat-discord-connector",
     "description": "A SeAT plugin which maintain user access on a Discord Guild based on defined pattern.",
     "type": "seat-plugin",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Warlof\\Seat\\Connector\\Drivers\\Discord\\": "src/"
@@ -27,7 +29,6 @@
             "email": "loic.leuilliot@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "extra": {
         "laravel": {
             "providers": [

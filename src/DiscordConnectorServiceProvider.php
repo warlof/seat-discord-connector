@@ -20,8 +20,8 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord;
 
-use App\Providers\AbstractSeatPlugin;
 use Illuminate\Support\Facades\Event;
+use Seat\Services\AbstractSeatPlugin;
 
 /**
  * Class DiscordConnectorServiceProvider.
