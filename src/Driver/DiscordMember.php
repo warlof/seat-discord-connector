@@ -23,6 +23,7 @@ namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Str;
+use Warlof\Seat\Connector\Drivers\Discord\Helpers\Helper;
 use Seat\Services\Exceptions\SettingException;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
@@ -111,7 +112,7 @@ class DiscordMember implements IUser
             throw new DriverException($e->getMessage(), $e->getCode(), $e);
         }
 
-        $nickname = Str::limit($name, 32, '');
+        $nickname = Str::limit($name, Helper::NICKNAME_LENGTH_LIMIT, '');
 
         try {
             DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
