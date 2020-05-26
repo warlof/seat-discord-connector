@@ -20,10 +20,12 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Seat\Web\Http\Controllers\Controller;
 use SocialiteProviders\Manager\Config;
 use Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient;
+use Warlof\Seat\Connector\Drivers\Discord\Helpers\Helper;
 use Warlof\Seat\Connector\Drivers\IClient;
 use Warlof\Seat\Connector\Events\EventLogger;
 use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
@@ -105,7 +107,7 @@ class RegistrationController extends Controller
         $client->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}', [
             'guild.id'     => $client->getGuildId(),
             'user.id'      => $socialite_user->id,
-            'nick'         => $driver_user->buildConnectorNickname(),
+            'nick'         => Str::limit($driver_user->buildConnectorNickname(), Helper::NICKNAME_LENGTH_LIMIT, ''),
             'roles'        => $driver_user->allowedSets(),
             'access_token' => $socialite_user->token,
         ]);

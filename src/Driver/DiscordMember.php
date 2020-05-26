@@ -21,6 +21,7 @@
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
 use Illuminate\Support\Str;
+use Warlof\Seat\Connector\Drivers\Discord\Helpers\Helper;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
 
@@ -104,7 +105,7 @@ class DiscordMember implements IUser
         if ($this->isOwner())
             return false;
 
-        $nickname = Str::limit($name, 32, '');
+        $nickname = Str::limit($name, Helper::NICKNAME_LENGTH_LIMIT, '');
 
         DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
             'guild.id' => DiscordClient::getInstance()->getGuildId(),
