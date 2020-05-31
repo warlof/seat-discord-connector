@@ -131,7 +131,7 @@ class RegistrationController extends Controller
         $client->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
             'guild.id'     => $client->getGuildId(),
             'user.id'      => $old_identity->connector_id,
-            'nick'         => $old_identity->buildConnectorNickname(),
+            'nick'         => Str::limit($old_identity->buildConnectorNickname(), Helper::NICKNAME_LENGTH_LIMIT, ''),
             'roles'        => [],
         ]);
 
