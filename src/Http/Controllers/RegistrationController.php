@@ -117,7 +117,7 @@ class RegistrationController extends Controller
                 $driver_user->connector_name, $driver_user->group_id, $driver_user->connector_id, $driver_user->unique_id)));
 
         // send the user to the guild
-        return redirect()->to(sprintf('https://discordapp.com/channels/%s', $client->getGuildId()));
+        return redirect()->to(sprintf('https://discord.com/channels/%s', $client->getGuildId()));
     }
 
     /**

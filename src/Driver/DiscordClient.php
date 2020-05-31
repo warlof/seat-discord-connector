@@ -35,7 +35,7 @@ use Warlof\Seat\Connector\Exceptions\DriverSettingsException;
  */
 class DiscordClient implements IClient
 {
-    CONST BASE_URI = 'https://discordapp.com/api';
+    CONST BASE_URI = 'https://discord.com/api';
 
     CONST VERSION = 'v6';
 
