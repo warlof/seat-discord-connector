@@ -43,7 +43,7 @@ Route::group([
 
     Route::group([
         'prefix' => 'settings',
-        'middleware' => 'bouncer:superuser',
+        'middleware' => 'can:global.superuser',
     ], function () {
 
         Route::post('/discord', [
