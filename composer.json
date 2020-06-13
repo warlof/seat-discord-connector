@@ -16,8 +16,8 @@
     },
     "require": {
         "ext-json": "*",
-        "warlof/seat-connector": "^2.0",
-        "socialiteproviders/discord": "v2.0.2"
+        "warlof/seat-connector": "^2.0@dev",
+        "socialiteproviders/discord": "^v2.0"
     },
     "require-dev": {
         "orchestra/testbench": "^4.0"
