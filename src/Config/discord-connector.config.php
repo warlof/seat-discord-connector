@@ -24,5 +24,5 @@
  */
 return [
     'fetcher' => \Warlof\Seat\Connector\Drivers\Discord\Fetchers\GuzzleFetcher::class,
-    'version' => '5.0.0-rc1',
+    'version' => '5.0.0-rc2',
 ];
