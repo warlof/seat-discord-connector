@@ -17,6 +17,7 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
  - On sidebar click on **Bot** and hit the **Add Bot** button
    - Check **Public Bot**
    - Check **Requires OAuth2 Code Grant**
+   - Check **Server Members Intent**
 
 > **NOTE**
 >
