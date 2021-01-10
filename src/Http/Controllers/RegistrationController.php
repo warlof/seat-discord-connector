@@ -41,7 +41,7 @@ use Warlof\Seat\Connector\Models\User;
 class RegistrationController extends Controller
 {
     const SCOPES = [
-        'identify', 'email', 'guilds.join',
+        'identify', 'guilds.join',
     ];
 
     /**
@@ -89,11 +89,6 @@ class RegistrationController extends Controller
         // retrieve authenticated user
         $socialite_user = Socialite::driver('discord')->setConfig($config)->user();
 
-        // ensure email is properly set on the account - it's our UID
-        if (empty($socialite_user->email))
-            return redirect()->to('seat-connector.identities')
-                ->with('error', 'Sorry, but it seems your Discord account does not have any e-mail address setup yet.');
-
         // update or create the connector user
         $original_user = User::where('connector_type', 'discord')->where('user_id', auth()->user()->id)->first();
 
@@ -107,7 +102,7 @@ class RegistrationController extends Controller
             'user_id'        => auth()->user()->id,
         ], [
             'connector_id'   => $socialite_user->id,
-            'unique_id'      => $socialite_user->email,
+            'unique_id'      => $socialite_user->name . '#' . $socialite_user->user['discriminator'],
             'connector_name' => $socialite_user->nickname,
         ]);
 
