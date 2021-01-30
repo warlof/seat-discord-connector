@@ -8,7 +8,7 @@ on:
 
 jobs:
   code-climate:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Code Climate Tests Coverage
     steps:
       - uses: actions/checkout@master
@@ -16,7 +16,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install curl zip openssl
-          sudo apt-get install php-cli php-common php-redis php-curl php-zip php-mbstring php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-igbinary
+          sudo apt-get install php7.4-cli php7.4-common php7.4-redis php7.4-curl php7.4-zip php7.4-mbstring php7.4-xdebug php7.4-gd php7.4-gmp php7.4-json php7.4-tokenizer php7.4-xml php7.4-sqlite3 php7.4-igbinary
           sudo apt-get install composer
           php -r "phpinfo();"
       - name: Download Code Climate Reporter
@@ -42,7 +42,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install curl zip openssl
-          sudo apt-get install php-cli php-common php-redis php-curl php-zip php-mbstring php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-igbinary
+          sudo apt-get install php7.4-cli php7.4-common php7.4-redis php7.4-curl php7.4-zip php7.4-mbstring php7.4-xdebug php7.4-gd php7.4-gmp php7.4-json php7.4-tokenizer php7.4-xml php7.4-sqlite3 php7.4-igbinary
           sudo apt-get install composer
           php -r "phpinfo();"
       - name: Update dependencies
