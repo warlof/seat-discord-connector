@@ -8,7 +8,7 @@ on:
 
 jobs:
   code-climate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Code Climate Tests Coverage
     steps:
       - uses: actions/checkout@master
