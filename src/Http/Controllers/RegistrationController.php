@@ -44,6 +44,10 @@ class RegistrationController extends Controller
         'identify', 'guilds.join',
     ];
 
+    const SCOPES_WITH_EMAIL = [
+        'identify', 'email', 'guilds.join',
+    ];
+
     /**
      * @return mixed
      * @throws \Seat\Services\Exceptions\SettingException
@@ -62,11 +66,14 @@ class RegistrationController extends Controller
         if (! property_exists($settings, 'client_secret') || is_null($settings->client_secret) || $settings->client_secret == '')
             throw new DriverSettingsException('Parameter client_secret is missing.');
 
+        if (! property_exists($settings, 'use_email_scope') || is_null($settings->use_email_scope))
+            throw new DriverSettingsException('Parameter use_email_scope is missing.');
+
         $redirect_uri = route('seat-connector.drivers.discord.registration.callback');
 
         $config = new Config($settings->client_id, $settings->client_secret, $redirect_uri);
 
-        return Socialite::driver('discord')->setConfig($config)->setScopes(self::SCOPES)->redirect();
+        return Socialite::driver('discord')->setConfig($config)->setScopes(($settings->use_email_scope == 1) ? self::SCOPES_WITH_EMAIL : self::SCOPES)->redirect();
     }
 
     /**
@@ -102,7 +109,7 @@ class RegistrationController extends Controller
             'user_id'        => auth()->user()->id,
         ], [
             'connector_id'   => $socialite_user->id,
-            'unique_id'      => $socialite_user->name . '#' . $socialite_user->user['discriminator'],
+            'unique_id'      => ($settings->use_email_scope == 1) ? $socialite_user->email : $socialite_user->name . '#' . $socialite_user->user['discriminator'],
             'connector_name' => $socialite_user->nickname,
         ]);
 
