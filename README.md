@@ -41,8 +41,7 @@ Finally, retrieve the bot token by clicking on the `Click here to reveal` link.
 ### Install Package
 Since SeAT 3.0 - it's become super easy to install package. Just require `warlof/seat-discord-connector`, publish vendor and run migrations scripts :)
 
-- Firstly, run the following command `composer require warlof/seat-discord-connector restcord/restcord:dev-develop`
-- Then, publish vendors `php artisan vendor:publish --force` (this will show you a prompt - input the number related to the following line `Warlof\Seat\Connector\Discord\DiscordConnectorServiceProvider`)
+- Firstly, run the following command `composer require warlof/seat-discord-connector`
 - Finally, run migrations scripts with `php artisan migrate`
 
 Don't forget to restart `supervisor` with `service supervisor restart` ;)
