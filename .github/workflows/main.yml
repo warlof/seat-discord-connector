@@ -26,12 +26,12 @@ jobs:
           chmod +x test-reporter-latest-linux-amd64
       - name: Update dependencies
         run: composer update --prefer-source
-        env:
-          XDEBUG_MODE: coverage
       - name: Prepare Reporter
         run: ./test-reporter-latest-linux-amd64 before-build
       - name: Run Unit Tests
         run: ./vendor/bin/phpunit
+        env:
+          XDEBUG_MODE: coverage
       - name: Send report to Code Climate
         run: ./test-reporter-latest-linux-amd64 after-build -t clover -r ${{ secrets.CC_REPORTER_ID }}
   codacy:
@@ -49,10 +49,10 @@ jobs:
           php -r "phpinfo();"
       - name: Update dependencies
         run: composer update
-        env:
-          XDEBUG_MODE: coverage
       - name: Run Unit Tests
         run: ./vendor/bin/phpunit
+        env:
+          XDEBUG_MODE: coverage
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
