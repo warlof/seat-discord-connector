@@ -39,5 +39,10 @@ return [
             'label' => 'seat-connector-discord::seat.bot_token',
             'type'  => 'text',
         ],
+        [
+            'name'  => 'use_email_scope',
+            'label' => 'seat-connector-discord::seat.use_email_scope',
+            'type'  => 'checkbox',
+        ],
     ],
 ];
