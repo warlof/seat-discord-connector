@@ -96,12 +96,52 @@ class RegistrationController extends Controller
         // retrieve authenticated user
         $socialite_user = Socialite::driver('discord')->setConfig($config)->user();
 
-        // update or create the connector user
-        $original_user = User::where('connector_type', 'discord')->where('user_id', auth()->user()->id)->first();
+        // attempt to retrieve a duplicated account
+        $duplicated_user = $this->getDuplicatedAccount($socialite_user);
+
+        if (! is_null($duplicated_user))
+            return $this->handleDuplicateResponse($duplicated_user, $socialite_user);
+
+        // attempt to retrieve authenticated account
+        $original_user = User::where('connector_type', 'discord')
+            ->where('user_id', auth()->user()->id)
+            ->first();
 
         // if connector ID is a new one - revoke existing access on the old ID
         if (! is_null($original_user) && $original_user->connector_id != $socialite_user->id)
             $this->revokeOldIdentity($client, $original_user);
+
+        // attach account and redirect user to discord guild
+        return $this->handleSuccessResponse($settings, $socialite_user);
+    }
+
+    /**
+     * Determine if there is another account linked to the registering one.
+     *
+     * @param \Laravel\Socialite\Two\User $socialite_user
+     * @return \Warlof\Seat\Connector\Models\User|null
+     */
+    private function getDuplicatedAccount(\Laravel\Socialite\Two\User $socialite_user): ?User
+    {
+        return User::where('connector_type', 'discord')
+            ->where('connector_id', $socialite_user->id)
+            ->where('user_id', '<>', auth()->user()->id)
+            ->first();
+    }
+
+    /**
+     * @param $settings
+     * @param \Laravel\Socialite\Two\User $socialite_user
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
+     */
+    private function handleSuccessResponse($settings, \Laravel\Socialite\Two\User $socialite_user)
+    {
+        // retrieve driver instance
+        $client = DiscordClient::getInstance();
+
+        $discord_username = $socialite_user->name . '#' . $socialite_user->user['discriminator'];
 
         // spawn or update existing identity using returned information
         $driver_user = User::updateOrCreate([
@@ -109,7 +149,7 @@ class RegistrationController extends Controller
             'user_id'        => auth()->user()->id,
         ], [
             'connector_id'   => $socialite_user->id,
-            'unique_id'      => ($settings->use_email_scope == 1) ? $socialite_user->email : $socialite_user->name . '#' . $socialite_user->user['discriminator'],
+            'unique_id'      => ($settings->use_email_scope == 1) ? $socialite_user->email : $discord_username,
             'connector_name' => $socialite_user->nickname,
         ]);
 
@@ -128,6 +168,25 @@ class RegistrationController extends Controller
 
         // send the user to the guild
         return redirect()->to(sprintf('https://discord.com/channels/%s', $client->getGuildId()));
+    }
+
+    /**
+     * Handle duplicate account response.
+     *
+     * @param \Warlof\Seat\Connector\Models\User $duplicated_user
+     * @param \Laravel\Socialite\Two\User $socialite_user
+     * @return \Illuminate\Http\RedirectResponse|void
+     */
+    private function handleDuplicateResponse(User $duplicated_user, \Laravel\Socialite\Two\User $socialite_user)
+    {
+        event(new EventLogger('discord', 'error', 'registration',
+            sprintf('User %s (%d) is trying to link account %s - but it\'s already linked to %s',
+                auth()->user()->name, auth()->user()->id, $socialite_user->nickname, $duplicated_user->user->name
+            )
+        ));
+
+        return redirect()->back()
+            ->with('error', 'Your account is already linked. This attempt has been recorded. Please contact your administrator.');
     }
 
     /**
