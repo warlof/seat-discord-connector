@@ -19,7 +19,7 @@ jobs:
         with:
           php-version: '7.4'
           coverage: xdebug
-          extensions: bz2, cli, curl, dom, gd, gmp, intl, igbinary, json, mbstring, opcache, redis, tokenizer, sqlite3, zip, xdebug
+          extensions: bz2, curl, dom, gd, gmp, intl, igbinary, json, mbstring, opcache, redis, tokenizer, sqlite3, zip, xdebug
           tools: composer:v2
 
       - name: Download Code Climate Reporter
@@ -42,21 +42,23 @@ jobs:
     runs-on: ubuntu-latest
     name: Codacy Tests Coverage
     steps:
-      - uses: actions/checkout@master
-      - name: Init PHP Environment
-        run: |
-          sudo apt-get update
-          sudo apt-get install curl zip openssl
-          sudo apt-get install php7.4-cli php7.4-common php-redis php7.4-curl php7.4-zip php7.4-mbstring php-xdebug php7.4-gd php7.4-gmp php7.4-json php7.4-tokenizer php7.4-xml php7.4-sqlite3 php-igbinary
-          sudo apt-get install composer
-          sudo update-alternatives --set php /usr/bin/php7.4
-          php -r "phpinfo();"
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: xdebug
+          extensions: bz2, curl, dom, gd, gmp, intl, igbinary, json, mbstring, opcache, redis, tokenizer, sqlite3, zip, xdebug
+          tools: composer:v2
+
       - name: Update dependencies
         run: composer update
+
       - name: Run Unit Tests
         run: ./vendor/bin/phpunit
-        env:
-          XDEBUG_MODE: coverage
+
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
