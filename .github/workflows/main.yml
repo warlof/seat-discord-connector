@@ -33,6 +33,9 @@ jobs:
       - name: Prepare Reporter
         run: ./test-reporter-latest-linux-amd64 before-build
 
+      - name: Run Tests
+        run: ./vendor/bin/phpunit
+
       - name: Send report to Code Climate
         run: ./test-reporter-latest-linux-amd64 after-build -t clover -r ${{ secrets.CC_REPORTER_ID }}
   codacy:
