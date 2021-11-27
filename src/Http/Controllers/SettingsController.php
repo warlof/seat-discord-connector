@@ -64,7 +64,7 @@ class SettingsController extends Controller
                 'use_email_scope' => 'boolean',
             ]);
         } catch(ValidationException $e) {
-            if (!$request->anyFilled(['client_id', 'client_secret', 'bot_token'])) {
+            if ($request->anyFilled(['client_id', 'client_secret', 'bot_token'])) {
                 throw $e;
             } else {
                 setting(['seat-connector.drivers.discord', null], true);
