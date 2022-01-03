@@ -44,5 +44,20 @@ return [
             'label' => 'seat-connector-discord::seat.use_email_scope',
             'type'  => 'checkbox',
         ],
+        [
+            'name'  => 'visible_roles',
+            'label' => 'seat-connector-discord::seat.visible_roles',
+            'type'  => 'text',
+        ],
+        [
+            'name'  => 'can_add_roles',
+            'label' => 'seat-connector-discord::seat.can_add_roles',
+            'type'  => 'text',
+        ],
+        [
+            'name'  => 'can_remove_roles',
+            'label' => 'seat-connector-discord::seat.can_remove_roles',
+            'type'  => 'text',
+        ],
     ],
 ];

@@ -145,6 +145,8 @@ class DiscordMember implements IUser
 
                 if (is_null($set)) continue;
 
+                if (! DiscordClient::getInstance()->checkVisibleRoles($set->getName(), $set->getId())) continue;
+
                 $this->roles->put($role_id, $set);
             }
         }
@@ -179,6 +181,9 @@ class DiscordMember implements IUser
             if (in_array($group->getId(), $this->role_ids) || $this->isOwner())
                 return;
 
+            if (! DiscordClient::getInstance()->checkCanAddRoles($group->getName(), $group->getId()))
+                return;
+
             DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
                 'guild.id' => DiscordClient::getInstance()->getGuildId(),
                 'role.id' => $group->getId(),
@@ -203,6 +208,9 @@ class DiscordMember implements IUser
     {
         try {
             if (! in_array($group->getId(), $this->role_ids) || $this->isOwner())
+                return;
+
+            if (! DiscordClient::getInstance()->checkCanRemoveRoles($group->getName(), $group->getId()))
                 return;
 
             DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [

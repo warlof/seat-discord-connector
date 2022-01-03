@@ -55,17 +55,23 @@ class SettingsController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'client_id'       => 'required|string',
-            'client_secret'   => 'required|string',
-            'bot_token'       => 'required|string',
-            'use_email_scope' => 'boolean',
+            'client_id'        => 'required|string',
+            'client_secret'    => 'required|string',
+            'bot_token'        => 'required|string',
+            'use_email_scope'  => 'boolean',
+            'visible_roles'    => 'string',
+            'can_add_roles'    => 'string',
+            'can_remove_roles' => 'string',
         ]);
 
         $settings = (object) [
-            'client_id'       => $request->input('client_id'),
-            'client_secret'   => $request->input('client_secret'),
-            'bot_token'       => $request->input('bot_token'),
-            'use_email_scope' => $request->input('use_email_scope', 0),
+            'client_id'        => $request->input('client_id'),
+            'client_secret'    => $request->input('client_secret'),
+            'bot_token'        => $request->input('bot_token'),
+            'use_email_scope'  => $request->input('use_email_scope', 0),
+            'visible_roles'    => $request->input('visible_roles'),
+            'can_add_roles'    => $request->input('can_add_roles'),
+            'can_remove_roles' => $request->input('can_remove_roles'),
         ];
 
         setting(['seat-connector.drivers.discord', $settings], true);

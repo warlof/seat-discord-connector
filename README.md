@@ -96,6 +96,26 @@ Simply confirm using the `Authorize` button which will redirect you to the SeAT 
 
 You'll be invited automatically to the Discord Server and attached channels.
 
+## Settings
+
+The SeAT global_settings table has a key 'seat-discord-connector' used by this module.  This contains serialized settings use by this module.
+
+| Field            | Description                                                                                                       | Default Value                          |
+|------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------------|
+| can_add_roles    | List of discord role names or role ids seperated by colon, that this connector is allowed to add.                 |                                        |
+|                  | The special role name of "@@everyrole" acts as wildcard, while blank "" means none.                               |                                        |
+|                  | A role needs to be visible through visibleRoles to be affected by this setting.                                   | @@everyrole:RoleName Example2 RemoveMe |
+| can_remove_roles | List of discord role names or role ids seperated by colon, that this connector is allowed to remove.              |                                        |
+|                  | The special role name of "@@everyrole" acts as wildcard, while blank "" means none.                               |                                        |
+|                  | A role needs to be visible through visibleRoles to be affected by this setting.                                   | @@everyrole:RoleName Example2 RemoveMe |
+| visible_roles    | List of discord role names or role ids seperated by colon, that this connector has visibiliy of from              |                                        |
+|                  | the discord server. The special role name of "@@everyrole" acts as wildcard, while blank "" means none.           |                                        |
+|                  | For most usage of this feature configuring visibleRoles to a non-default value will prevent all changes to roles. | @@everyrole:RoleName Example2 RemoveMe |
+
+By default this connector expects to fully manage all roles at the Discord server.
+Through careful manipulation of these values you can define the scope of roles that can be manipulated by this connector.
+The use of "RoleName Example2 RemoveMe" in the default setting has been chosen to allow the administrators best guess at understanding how the field should be configured for multiple roles from looking at the setting without reading this documentation.
+
 ## Upgrade
 
 If you're coming from a version prior to 4.x, you may want to convert your data into the new connector structure.
