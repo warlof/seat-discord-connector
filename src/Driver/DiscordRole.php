@@ -101,6 +101,9 @@ class DiscordRole implements ISet
         if (in_array($user, $this->getMembers()))
             return;
 
+        if (! DiscordClient::getInstance()->checkCanAddRoles($this->name, $this->id))
+            return;
+
         try {
             DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
                 'guild.id' => DiscordClient::getInstance()->getGuildId(),
@@ -124,6 +127,9 @@ class DiscordRole implements ISet
     public function removeMember(IUser $user)
     {
         if (! in_array($user, $this->getMembers()))
+            return;
+
+        if (! DiscordClient::getInstance()->checkCanRemoveRoles($this->name, $this->id))
             return;
 
         try {

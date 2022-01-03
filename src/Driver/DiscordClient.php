@@ -79,6 +79,21 @@ class DiscordClient implements IClient
     private $owner_id;
 
     /**
+     * @var  Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordRoleFilter
+     */
+    private $visible_roles;
+
+    /**
+     * @var  Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordRoleFilter
+     */
+    private $can_add_roles;
+
+    /**
+     * @var  Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordRoleFilter
+     */
+    private $can_remove_roles;
+
+    /**
      * DiscordClient constructor.
      *
      * @param array $parameters
@@ -88,6 +103,9 @@ class DiscordClient implements IClient
         $this->guild_id  = $parameters['guild_id'];
         $this->bot_token = $parameters['bot_token'];
         $this->owner_id  = $parameters['owner_id'];
+        $this->visible_roles = new DiscordRoleFilter($parameters['visible_roles']);
+        $this->can_add_roles = new DiscordRoleFilter($parameters['can_add_roles']);
+        $this->can_remove_roles = new DiscordRoleFilter($parameters['can_remove_roles']);
 
         $this->members = collect();
         $this->roles   = collect();
@@ -120,9 +138,12 @@ class DiscordClient implements IClient
                 throw new DriverSettingsException('Parameter bot_token is missing.');
 
             self::$instance = new DiscordClient([
-                'guild_id'  => $settings->guild_id,
-                'bot_token' => $settings->bot_token,
-                'owner_id'  => property_exists($settings, 'owner_id') ? $settings->owner_id : null,
+                'guild_id'         => $settings->guild_id,
+                'bot_token'        => $settings->bot_token,
+                'owner_id'         => property_exists($settings, 'owner_id') ? $settings->owner_id : null,
+                'visible_roles'    => property_exists($settings, 'visible_roles') ? $settings->visible_roles : DiscordRoleFilter::DEFAULT_VISIBLE_ROLES,
+                'can_add_roles'    => property_exists($settings, 'can_add_roles') ? $settings->can_add_roles : DiscordRoleFilter::DEFAULT_CAN_ADD_ROLES,
+                'can_remove_roles' => property_exists($settings, 'can_remove_roles') ? $settings->can_remove_roles : DiscordRoleFilter::DEFAULT_CAN_REMOVE_ROLES,
             ]);
         }
 
@@ -354,8 +375,38 @@ class DiscordClient implements IClient
             // ignore managed roles (ie: booster)
             if ($role_attributes['managed']) continue;
 
+            if (! $this->checkVisibleRoles($role_attributes['name'], $role_attributes['id'])) continue;
+
             $role = new DiscordRole($role_attributes);
             $this->roles->put($role->getId(), $role);
         }
     }
+
+    /**
+     * @params any $args
+     * @return bool
+     */
+    public function checkVisibleRoles(...$args) : bool
+    {
+        return $this->visible_roles->check(...$args);
+    }
+
+    /**
+     * @params any $args
+     * @return bool
+     */
+    public function checkCanAddRoles(...$args) : bool
+    {
+        return $this->can_add_roles->check(...$args);
+    }
+
+    /**
+     * @params any $args
+     * @return bool
+     */
+    public function checkCanRemoveRoles(...$args) : bool
+    {
+        return $this->can_remove_roles->check(...$args);
+    }
+
 }

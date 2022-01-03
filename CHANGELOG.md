@@ -1,5 +1,7 @@
 # Changelog
 
+- Added DiscordRoleFilter feature and settings
+
 ## 5.0.0
 - Replace the API Throttler by a Guzzle Middleware which is more efficient
 - Make driver compatible with connector 2.0.x
