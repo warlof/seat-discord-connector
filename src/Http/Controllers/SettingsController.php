@@ -22,6 +22,7 @@
 namespace Warlof\Seat\Connector\Drivers\Discord\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Seat\Web\Http\Controllers\Controller;
 use SocialiteProviders\Manager\Config;
@@ -51,15 +52,24 @@ class SettingsController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return mixed
      * @throws \Seat\Services\Exceptions\SettingException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'client_id'       => 'required|string',
-            'client_secret'   => 'required|string',
-            'bot_token'       => 'required|string',
-            'use_email_scope' => 'boolean',
-        ]);
+        try {
+            $request->validate([
+                'client_id'       => 'required|string',
+                'client_secret'   => 'required|string',
+                'bot_token'       => 'required|string',
+                'use_email_scope' => 'boolean',
+            ]);
+        } catch(ValidationException $e) {
+            if ($request->anyFilled(['client_id', 'client_secret', 'bot_token'])) {
+                throw $e;
+            } else {
+                setting(['seat-connector.drivers.discord', null], true);
+            }
+        }
 
         $settings = (object) [
             'client_id'       => $request->input('client_id'),
