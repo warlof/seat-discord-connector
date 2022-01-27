@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.1.0
+- Remove email scope requirement, use username+discriminator instead by @xcrf in #63
+- Show a shinny error on duplicated account by @warlof in #66
+- Allow clearing Discord Connector oAuth Fields by @tehraven in #67
+
 ## 5.0.0
 - Replace the API Throttler by a Guzzle Middleware which is more efficient
 - Make driver compatible with connector 2.0.x
