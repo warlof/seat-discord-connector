@@ -139,14 +139,4 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     {
         return 'warlof';
     }
-
-    /**
-     * Return the plugin installed version.
-     *
-     * @return string
-     */
-    public function getVersion(): string
-    {
-        return config('discord-connector.config.version');
-    }
 }
