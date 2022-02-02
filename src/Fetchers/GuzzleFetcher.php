@@ -21,8 +21,10 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Fetchers;
 
+use Composer\InstalledVersions;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
+use OutOfBoundsException;
 use Psr\Http\Message\ResponseInterface;
 use Warlof\Seat\Connector\Drivers\Discord\Http\Middleware\Throttlers\RateLimiterMiddleware;
 
@@ -46,6 +48,12 @@ class GuzzleFetcher implements IFetcher
      */
     public function __construct(string $base_uri, string $token)
     {
+        try {
+            $version = InstalledVersions::getPrettyVersion('warlof/seat-discord-connector');
+        } catch (OutOfBoundsException $e) {
+            $version = 'dev';
+        }
+        
         $stack = HandlerStack::create();
         $stack->push(new RateLimiterMiddleware());
 
@@ -54,7 +62,7 @@ class GuzzleFetcher implements IFetcher
             'headers' => [
                 'Authorization' => sprintf('Bot %s', $token),
                 'Content-Type' => 'application/json',
-                'User-Agent' => sprintf('warlof@seat-discord-connector/%s GitHub SeAT', config('discord-connector.config.version')),
+                'User-Agent' => sprintf('warlof@seat-discord-connector/%s GitHub SeAT', $version),
             ],
             'handler' => $stack,
         ]);
