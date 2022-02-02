@@ -19,9 +19,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * TODO: lazy coder, remember to edit this file before TAG ! DAMMIT !
- */
 return [
     'fetcher' => \Warlof\Seat\Connector\Drivers\Discord\Fetchers\GuzzleFetcher::class,
     'version' => '5.1.0',
