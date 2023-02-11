@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of SeAT Discord Connector.
  *
- * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ * Copyright (C) 2019, 2020  Warlof Tutsimo <loic.leuilliot@gmail.com>
  *
  * SeAT Discord Connector  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +21,10 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
+use GuzzleHttp\Exception\GuzzleException;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
+use Warlof\Seat\Connector\Exceptions\DriverException;
 
 /**
  * Class DiscordRole.
@@ -74,16 +77,14 @@ class DiscordRole implements ISet
 
     /**
      * @return \Warlof\Seat\Connector\Drivers\IUser[]
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getMembers(): array
     {
         if ($this->members->isEmpty()) {
             $users = DiscordClient::getInstance()->getUsers();
 
-            $this->members = collect(array_filter($users, function ($user) {
+            $this->members = collect(array_filter($users, function (IUser $user) {
                 return in_array($this, $user->getSets());
             }));
         }
@@ -93,40 +94,51 @@ class DiscordRole implements ISet
 
     /**
      * @param \Warlof\Seat\Connector\Drivers\IUser $user
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function addMember(IUser $user)
     {
         if (in_array($user, $this->getMembers()))
             return;
 
-        DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'role.id'  => $this->id,
-            'user.id'  => $user->getClientId(),
-        ]);
+        try {
+            DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'role.id' => $this->id,
+                'user.id' => $user->getClientId(),
+            ]);
+        } catch (GuzzleException $e) {
+            throw new DriverException(
+                sprintf('Unable to add user %s as a member of set %s.', $user->getName(), $this->getName()),
+                0,
+                $e);
+        }
 
         $this->members->put($user->getClientId(), $user);
     }
 
     /**
      * @param \Warlof\Seat\Connector\Drivers\IUser $user
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function removeMember(IUser $user)
     {
         if (! in_array($user, $this->getMembers()))
             return;
 
-        DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'role.id'  => $this->id,
-            'user.id'  => $user->getClientId(),
-        ]);
+        try {
+            DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'role.id' => $this->id,
+                'user.id' => $user->getClientId(),
+            ]);
+        } catch (GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
+            throw new DriverException(
+                sprintf('Unable to remove user %s from set %s.', $user->getName(), $this->getName()),
+                0,
+                $e);
+        }
 
         $this->members->pull($user->getClientId());
     }

@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of SeAT Discord Connector.
  *
- * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ * Copyright (C) 2019, 2020  Warlof Tutsimo <loic.leuilliot@gmail.com>
  *
  * SeAT Discord Connector  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +21,7 @@
 
 return [
     'name'     => 'discord',
-    'icon'     => 'fa-gamepad',
+    'icon'     => 'fab fa-discord',
     'client'   => \Warlof\Seat\Connector\Drivers\Discord\Driver\DiscordClient::class,
     'settings' => [
         [
@@ -37,6 +38,11 @@ return [
             'name'  => 'bot_token',
             'label' => 'seat-connector-discord::seat.bot_token',
             'type'  => 'text',
+        ],
+        [
+            'name'  => 'use_email_scope',
+            'label' => 'seat-connector-discord::seat.use_email_scope',
+            'type'  => 'checkbox',
         ],
     ],
 ];

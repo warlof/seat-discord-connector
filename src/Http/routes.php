@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
- * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,20 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-/*
-Route::group([
-    'namespace' => 'Warlof\Seat\Connector\Discord\Http\Controllers\Api\v1',
-    'prefix' => 'api',
-    'middleware' => 'api.auth'
-], function() {
-    Route::group(['prefix' => 'v2'], function () {
-        Route::group(['prefix' => 'discord-connector'], function () {
-                Route::get('/mapping', 'DiscordApiController@getDiscordMappings');
-        });
-    });
-});
-*/
 
 Route::group([
     'namespace'  => 'Warlof\Seat\Connector\Drivers\Discord\Http\Controllers',
@@ -56,7 +43,7 @@ Route::group([
 
     Route::group([
         'prefix' => 'settings',
-        'middleware' => 'bouncer:superuser',
+        'middleware' => 'can:global.superuser',
     ], function () {
 
         Route::post('/discord', [

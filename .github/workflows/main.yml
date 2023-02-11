@@ -1,35 +1,65 @@
-name: codacy-coverage-reporter
+name: tests
 
 on:
   push:
     branches: [ 5.0.x ]
+  pull_request:
+    branches: [ 5.0.x ]
 
 jobs:
-  codacy-coverage-reporter:
+  code-climate:
     runs-on: ubuntu-latest
-    name: codacy-coverage-reporter
+    name: Code Climate Tests Coverage
     steps:
-      - uses: actions/checkout@master
-      - name: Init PHP Environment
-        run: |
-          - apt-get update
-          - apt-get install curl zip openssl
-          - apt-get install php-cli php-redis php-curl php-zip php-mbstring php-dom php-xdebug php-gd php-gmp php-json php-tokenizer php-xml php-sqlite3 php-phar php-igbinary
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: xdebug
+          extensions: bz2, curl, dom, gd, gmp, intl, igbinary, json, mbstring, opcache, redis, tokenizer, sqlite3, zip, xdebug
+          tools: composer:v2
+
       - name: Download Code Climate Reporter
         run: |
-          - wget https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
-          - chmod +x test-reporter-latest-linux-amd64
+          wget https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
+          chmod +x test-reporter-latest-linux-amd64
+
       - name: Update dependencies
-        uses: php-actions/composer@v1
-        with:
-          command: update
+        run: composer update --prefer-source
+
       - name: Prepare Reporter
         run: ./test-reporter-latest-linux-amd64 before-build
-      - name: Run Unit Tests
+
+      - name: Run Tests
         run: ./vendor/bin/phpunit
+
       - name: Send report to Code Climate
         run: ./test-reporter-latest-linux-amd64 after-build -t clover -r ${{ secrets.CC_REPORTER_ID }}
+  codacy:
+    runs-on: ubuntu-latest
+    name: Codacy Tests Coverage
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: xdebug
+          extensions: bz2, curl, dom, gd, gmp, intl, igbinary, json, mbstring, opcache, redis, tokenizer, sqlite3, zip, xdebug
+          tools: composer:v2
+
+      - name: Update dependencies
+        run: composer update
+
+      - name: Run Unit Tests
+        run: ./vendor/bin/phpunit
+
       - name: Run codacy-coverage-reporter
-        uses: mrfyda/codacy-coverage-reporter-action@master
+        uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

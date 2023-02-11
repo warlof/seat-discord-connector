@@ -2,7 +2,7 @@
 /**
  * This file is part of SeAT Discord Connector.
  *
- * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ * Copyright (C) 2019, 2020  Warlof Tutsimo <loic.leuilliot@gmail.com>
  *
  * SeAT Discord Connector  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,8 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord;
 
+use Illuminate\Support\Facades\Event;
 use Seat\Services\AbstractSeatPlugin;
-use SocialiteProviders\Discord\Provider;
-use Warlof\Seat\Connector\Drivers\Discord\Commands\Convert;
 
 /**
  * Class DiscordConnectorServiceProvider.
@@ -40,7 +39,8 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     {
         $this->addRoutes();
         $this->addTranslations();
-        $this->addUpgradeCommand();
+
+        $this->registerSocialiteDiscordDriver();
     }
 
     /**
@@ -56,15 +56,14 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
         $this->mergeConfigFrom(
             __DIR__ . '/Config/seat-connector.config.php', 'seat-connector.drivers.discord');
 
-        $discord = $this->app->make('Laravel\Socialite\Contracts\Factory');
-        $discord->extend('discord',
-            function ($app) use ($discord) {
-                return $discord->buildProvider(Provider::class, [
-                    'client_id'     => '',
-                    'client_secret' => '',
-                    'redirect'      => '',
-                ]);
-            });
+        // set default configuration for Discord driver to make Socialite happy if none set
+        if (! $this->app['config']->get('services.discord')) {
+            $this->app['config']->set('services.discord', [
+                'client_id'     => '',
+                'client_secret' => '',
+                'redirect'      => '',
+            ]);
+        }
     }
 
     /**
@@ -86,13 +85,11 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     }
 
     /**
-     * Import commands
+     * Register Socialite Discord Driver
      */
-    private function addUpgradeCommand()
+    private function registerSocialiteDiscordDriver()
     {
-        $this->commands([
-            Convert::class,
-        ]);
+        Event::listen(\SocialiteProviders\Manager\SocialiteWasCalled::class, 'SocialiteProviders\\Discord\\DiscordExtendSocialite@handle');
     }
 
     /**
@@ -141,15 +138,5 @@ class DiscordConnectorServiceProvider extends AbstractSeatPlugin
     public function getPackagistVendorName(): string
     {
         return 'warlof';
-    }
-
-    /**
-     * Return the plugin installed version.
-     *
-     * @return string
-     */
-    public function getVersion(): string
-    {
-        return config('discord-connector.config.version');
     }
 }

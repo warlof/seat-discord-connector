@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of SeAT Discord Connector.
  *
- * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ * Copyright (C) 2019, 2020  Warlof Tutsimo <loic.leuilliot@gmail.com>
  *
  * SeAT Discord Connector  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +21,13 @@
 
 namespace Warlof\Seat\Connector\Drivers\Discord\Driver;
 
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Str;
+use Warlof\Seat\Connector\Drivers\Discord\Helpers\Helper;
+use Seat\Services\Exceptions\SettingException;
 use Warlof\Seat\Connector\Drivers\ISet;
 use Warlof\Seat\Connector\Drivers\IUser;
+use Warlof\Seat\Connector\Exceptions\DriverException;
 
 /**
  * Class DiscordMember.
@@ -95,22 +100,33 @@ class DiscordMember implements IUser
     /**
      * @param string $name
      * @return bool
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function setName(string $name): bool
     {
-        if ($this->isOwner())
-            return false;
+        try {
+            if ($this->isOwner())
+                return false;
+        } catch (SettingException | GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
+        }
 
-        $nickname = Str::limit($name, 32, '');
+        $nickname = Str::limit($name, Helper::NICKNAME_LENGTH_LIMIT, '');
 
-        DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'user.id'  => $this->id,
-            'nick'     => $nickname,
-        ]);
+        try {
+            DiscordClient::getInstance()->sendCall('PATCH', '/guilds/{guild.id}/members/{user.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'user.id' => $this->id,
+                'nick' => $nickname,
+            ]);
+        } catch (GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
+            throw new DriverException(
+                sprintf('Unable to change user name from %s to %s.', $this->getName(), $name),
+                0,
+                $e);
+        }
 
         $this->nick = $nickname;
 
@@ -119,9 +135,7 @@ class DiscordMember implements IUser
 
     /**
      * @return \Warlof\Seat\Connector\Drivers\ISet[]
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function getSets(): array
     {
@@ -157,55 +171,67 @@ class DiscordMember implements IUser
 
     /**
      * @param \Warlof\Seat\Connector\Drivers\ISet $group
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function addSet(ISet $group)
     {
-        if (in_array($group->getId(), $this->role_ids) || $this->isOwner())
-            return;
+        try {
+            if (in_array($group->getId(), $this->role_ids) || $this->isOwner())
+                return;
 
-        DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'role.id'  => $group->getId(),
-            'user.id'  => $this->id,
-        ]);
+            DiscordClient::getInstance()->sendCall('PUT', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'role.id' => $group->getId(),
+                'user.id' => $this->id,
+            ]);
 
-        $this->role_ids[] = $group->getId();
-        $this->roles->put($group->getId(), $group);
+            $this->role_ids[] = $group->getId();
+            $this->roles->put($group->getId(), $group);
+        } catch (SettingException | GuzzleException $e) {
+            throw new DriverException(
+                sprintf('Unable to add set %s to the user %s.', $group->getName(), $this->getName()),
+                0,
+                $e);
+        }
     }
 
     /**
      * @param \Warlof\Seat\Connector\Drivers\ISet $group
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     public function removeSet(ISet $group)
     {
-        if (! in_array($group->getId(), $this->role_ids) || $this->isOwner())
-            return;
+        try {
+            if (! in_array($group->getId(), $this->role_ids) || $this->isOwner())
+                return;
 
-        DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
-            'guild.id' => DiscordClient::getInstance()->getGuildId(),
-            'role.id'  => $group->getId(),
-            'user.id'  => $this->id,
-        ]);
+            DiscordClient::getInstance()->sendCall('DELETE', '/guilds/{guild.id}/members/{user.id}/roles/{role.id}', [
+                'guild.id' => DiscordClient::getInstance()->getGuildId(),
+                'role.id'  => $group->getId(),
+                'user.id'  => $this->id,
+            ]);
 
-        $this->roles->pull($group->getId());
+            $this->roles->pull($group->getId());
 
-        $key = array_search($group->getId(), $this->role_ids);
+            $key = array_search($group->getId(), $this->role_ids);
 
-        if ($key !== false) {
-            unset($this->role_ids[$key]);
+            if ($key !== false) {
+                unset($this->role_ids[$key]);
+            }
+        } catch (SettingException | GuzzleException $e) {
+            logger()->error(sprintf('[seat-connector][discord] %s', $e->getMessage()));
+            throw new DriverException(
+                sprintf('Unable to remove set %s from the user %s.', $group->getName(), $this->getName()),
+                0,
+                $e);
         }
     }
 
     /**
      * @return bool
+     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Seat\Services\Exceptions\SettingException
-     * @throws \Warlof\Seat\Connector\Exceptions\DriverSettingsException
+     * @throws \Warlof\Seat\Connector\Exceptions\DriverException
      */
     private function isOwner(): bool
     {

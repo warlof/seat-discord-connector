@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of discord-connector and provides user synchronization between both SeAT and a Discord Guild
  *
- * Copyright (C) 2016, 2017, 2018  Loïc Leuilliot <loic.leuilliot@gmail.com>
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020  Loïc Leuilliot <loic.leuilliot@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,8 +55,10 @@ class Helper
     public static function arrayBitwiseOr(array $masks): int
     {
         $value = 0;
+
         foreach ($masks as $mask)
             $value |= $mask;
+
         return $value;
     }
 }

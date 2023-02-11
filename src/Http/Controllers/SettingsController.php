@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of SeAT Discord Connector.
  *
- * Copyright (C) 2019  Warlof Tutsimo <loic.leuilliot@gmail.com>
+ * Copyright (C) 2019, 2020  Warlof Tutsimo <loic.leuilliot@gmail.com>
  *
  * SeAT Discord Connector  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@
 namespace Warlof\Seat\Connector\Drivers\Discord\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Seat\Web\Http\Controllers\Controller;
 use SocialiteProviders\Manager\Config;
@@ -50,19 +52,30 @@ class SettingsController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return mixed
      * @throws \Seat\Services\Exceptions\SettingException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'client_id'     => 'required|string',
-            'client_secret' => 'required|string',
-            'bot_token'     => 'required|string',
-        ]);
+        try {
+            $request->validate([
+                'client_id'       => 'required|string',
+                'client_secret'   => 'required|string',
+                'bot_token'       => 'required|string',
+                'use_email_scope' => 'boolean',
+            ]);
+        } catch(ValidationException $e) {
+            if ($request->anyFilled(['client_id', 'client_secret', 'bot_token'])) {
+                throw $e;
+            } else {
+                setting(['seat-connector.drivers.discord', null], true);
+            }
+        }
 
         $settings = (object) [
-            'client_id'     => $request->input('client_id'),
-            'client_secret' => $request->input('client_secret'),
-            'bot_token'     => $request->input('bot_token'),
+            'client_id'       => $request->input('client_id'),
+            'client_secret'   => $request->input('client_secret'),
+            'bot_token'       => $request->input('bot_token'),
+            'use_email_scope' => $request->input('use_email_scope', 0),
         ];
 
         setting(['seat-connector.drivers.discord', $settings], true);
