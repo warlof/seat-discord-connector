@@ -8,13 +8,16 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
 
 ## Setup
 
-### Create Application
-- Go to the [following url](https://discordapp.com/developers/applications/me/create) in order to create an application and retrieve bot token.
-- Give it a name and suitable description; so user will be able to know what it is related to later.
-- Click on the `Add Redirect` button twice and seed spawned field with the address bellow :
-  - {seat-public-url}/seat-connector/registration/discord/callback
-  - {seat-public-url}/seat-connector/settings/discord/callback
-- Once done, click on the `Create app` at the bottom of the form
+## Create Application
+ - Go to the [following url](https://discordapp.com/developers/applications) in order to create an application and retrieve bot token.
+ - Give it a name and suitable description; so user will be able to know what it is related to later.
+ - On sidebar, click on **OAuth2** and hit the **Add Redirect** button twice and seed spawned field with the address bellow :
+   - `{seat-public-url}/seat-connector/registration/discord/callback`
+   - `{seat-public-url}/seat-connector/settings/discord/callback`
+ - On sidebar click on **Bot** and hit the **Add Bot** button
+   - Check **Public Bot**
+   - Check **Requires OAuth2 Code Grant**
+   - Check **Server Members Intent**
 
 > **NOTE**
 >
@@ -29,14 +32,14 @@ A [SeAT](https://github.com/eveseat/seat) plugin which maintain user access on a
 ### Retrieving Credentials
 Once your application has been created, we will need to retrieve credentials which will be used later in order to setup the connector into SeAT.
 
-Go on the [following url](https://discordapp.com/developers/applications/me) and click on the box which is matching to the previously created application.
+Go on the [following url](https://discordapp.com/developers/applications) and click on the box which is matching to the previously created application.
 
-Take a note of the following information available in the upper top section :
-- `Client ID` which is a displayed number
-- `Client Secret` which is a strange text (hit on `click here to reveal` link)
-
-Go at the footer section called `Bot` and check `Require OAuth2 access code` then confirm change using `Register modification` button at the bottom of the page.
-Finally, retrieve the bot token by clicking on the `Click here to reveal` link.
+Take a note of the following information :
+ - From the sidebar, under **General Information**
+   - `Client ID` which is a displayed number
+   - `Client Secret` which is a strange text (hit the **Click to reveal** link)
+ - From the sidebar, under **Bot**
+   - `Token` which is a strange text (hit the **Click to Reveal Token** link).
 
 ### Install Package
 Since SeAT 3.0 - it's become super easy to install package. Just require `warlof/seat-discord-connector`, publish vendor and run migrations scripts :)
@@ -44,7 +47,7 @@ Since SeAT 3.0 - it's become super easy to install package. Just require `warlof
 - Firstly, run the following command `composer require warlof/seat-discord-connector`
 - Finally, run migrations scripts with `php artisan migrate`
 
-Don't forget to restart `supervisor` with `service supervisor restart` ;)
+Don't forget to restart `supervisor` with `service supervisor restart` (or your `seat-worker` container if you're under Docker) ;)
 
 > **IMPORTANT**
 >
